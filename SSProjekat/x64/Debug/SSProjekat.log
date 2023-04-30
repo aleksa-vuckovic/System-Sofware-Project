@@ -1,0 +1,10 @@
+﻿  Instruction.cpp
+D:\6\SS\SSProjekat\SSProjekat\Operand.h(73,1): warning C4250: 'LiteralRegisterOperand': inherits 'LiteralOperand::LiteralOperand::getLiteral' via dominance
+D:\6\SS\SSProjekat\SSProjekat\Operand.h(18,6): message : see declaration of 'LiteralOperand::getLiteral'
+D:\6\SS\SSProjekat\SSProjekat\Operand.h(73,1): warning C4250: 'LiteralRegisterOperand': inherits 'RegisterOperand::RegisterOperand::getRegister' via dominance
+D:\6\SS\SSProjekat\SSProjekat\Operand.h(54,6): message : see declaration of 'RegisterOperand::getRegister'
+D:\6\SS\SSProjekat\SSProjekat\Operand.h(79,1): warning C4250: 'SymbolRegisterOperand': inherits 'SymbolOperand::SymbolOperand::getSymbol' via dominance
+D:\6\SS\SSProjekat\SSProjekat\Operand.h(36,14): message : see declaration of 'SymbolOperand::getSymbol'
+D:\6\SS\SSProjekat\SSProjekat\Operand.h(79,1): warning C4250: 'SymbolRegisterOperand': inherits 'RegisterOperand::RegisterOperand::getRegister' via dominance
+D:\6\SS\SSProjekat\SSProjekat\Operand.h(54,6): message : see declaration of 'RegisterOperand::getRegister'
+  SSProjekat.vcxproj -> D:\6\SS\SSProjekat\x64\Debug\SSProjekat.exe
