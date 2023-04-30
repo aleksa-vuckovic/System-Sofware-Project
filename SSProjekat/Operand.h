@@ -5,28 +5,33 @@ class Operand {
 public:
 	typedef enum Type { IMM_LIT, IMM_SYM, MEM_LIT, MEM_SYM, REG_DIR, REG_IND, REG_LIT, REG_SYM } Type;
 	virtual std::string getSymbol();
-	virtual int getLiteral();
-	virtual int getRegister();
+	virtual long getLiteral() { return 0; }
+	virtual int getRegister() { return 0; }
 	virtual Type getType() = 0;
+
+	virtual bool hasLiteral() { return false; }
+	virtual bool hasRegister() { return false;  }
+	virtual bool hasSymbol() { return false; }
 	virtual std::string str() = 0;
 	virtual ~Operand();
 };
 class LiteralOperand : public virtual Operand {
-	int val;
+	long val;
 public:
-	LiteralOperand(int val);
-	int getLiteral();
+	LiteralOperand(long val);
+	long getLiteral() override;
+	bool hasLiteral() override { return true; }
 	std::string str();
 };
 class ImmediateLiteralOperand : public LiteralOperand {
 public:
-	ImmediateLiteralOperand(int val);
+	ImmediateLiteralOperand(long val);
 	Type getType();
 	std::string str();
 };
 class MemoryLiteralOperand : public LiteralOperand {
 public:
-	MemoryLiteralOperand(int val);
+	MemoryLiteralOperand(long val);
 	Type getType();
 };
 class SymbolOperand : public virtual Operand {
@@ -67,7 +72,7 @@ public:
 };
 class LiteralRegisterOperand : public RegisterOperand, public LiteralOperand {
 public:
-	LiteralRegisterOperand(int val, int reg);
+	LiteralRegisterOperand(long val, int reg);
 	Type getType();
 	std::string str();
 };

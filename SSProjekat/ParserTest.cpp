@@ -4,10 +4,10 @@
 #define TESTNUM 8
 void testParser() {
 	std::string lines[TESTNUM] = {
-		" label1: beQ %pC, %r15, 0xf ",
+		" label1: beQ %pC, %r15, -0xf ",
 		" lab2:",
 		"ld [%r0 + symbol1], %R4",
-		"st %r9, [%r5 + 123]",
+		"st %r9, [%r5 - 0xf]",
 		"ld [%r4], %r4",
 		"ld $0x100, %r4",
 		"ld $immsym, %r3",

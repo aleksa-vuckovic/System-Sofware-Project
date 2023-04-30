@@ -2,28 +2,22 @@
 std::string Operand::getSymbol() {
 	return "";
 }
-int Operand::getLiteral() {
-	return 0;
-}
-int Operand::getRegister() {
-	return 0;
-}
 Operand::~Operand() {}
-LiteralOperand::LiteralOperand(int val) : val(val) {}
-int LiteralOperand::getLiteral() {
+LiteralOperand::LiteralOperand(long val) : val(val) {}
+long LiteralOperand::getLiteral() {
 	return val;
 }
 std::string  LiteralOperand::str() {
 	return std::to_string(val);
 }
-ImmediateLiteralOperand::ImmediateLiteralOperand(int val) : LiteralOperand(val) {}
+ImmediateLiteralOperand::ImmediateLiteralOperand(long val) : LiteralOperand(val) {}
 Operand::Type ImmediateLiteralOperand::getType() {
 	return IMM_LIT;
 }
 std::string ImmediateLiteralOperand::str() {
 	return "$" + LiteralOperand::str();
 }
-MemoryLiteralOperand::MemoryLiteralOperand(int val) : LiteralOperand(val) {}
+MemoryLiteralOperand::MemoryLiteralOperand(long val) : LiteralOperand(val) {}
 Operand::Type MemoryLiteralOperand::getType() {
 	return MEM_LIT;
 }
@@ -63,7 +57,7 @@ Operand::Type IndirectRegisterOperand::getType() {
 std::string IndirectRegisterOperand::str() {
 	return "[" + RegisterOperand::str() + "]";
 }
-LiteralRegisterOperand::LiteralRegisterOperand(int val, int reg) : RegisterOperand(reg), LiteralOperand(val) {}
+LiteralRegisterOperand::LiteralRegisterOperand(long val, int reg) : RegisterOperand(reg), LiteralOperand(val) {}
 Operand::Type LiteralRegisterOperand::getType() {
 	return REG_LIT;
 }

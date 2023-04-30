@@ -3,28 +3,28 @@
 #include <regex>
 #include <cctype>
 #include "Operand.h"
+#include "Converter.h"
 
 Parser::Parser() : directivePattern(R"del(^\s*(?:(\w+):)?\s*\.(\w+)\s+(.*)$)del"),
 		instructionPattern(R"del(^\s*(?:(\w+):)?\s*(\w{2,4})\s*(.*)$)del"),
 		labelOnlyPattern(R"del(^\s*(\w+):\s*$)del"),
 		operatorListPattern(R"del(^([^,]+)(?:,([^,]+)(?:,([^,]+))?)?$)del"),
-		IMM_LITPattern(R"del(^\s*\$([0-9]\w*)\s*$)del"),
+		IMM_LITPattern(R"del(^\s*\$([+-]?[0-9]\w*)\s*$)del"),
 		IMM_SYMPattern(R"del(^\s*\$([a-zA-Z]\w*)\s*$)del"),
 		MEM_LITPattern(R"del(^\s*([0-9]\w*)\s*$)del"),
 		MEM_SYMPattern(R"del(^\s*([a-zA-Z]\w*)\s*$)del"),
 		REG_DIRPattern(R"del(^\s*%(\w+)\s*$)del"),
 		REG_INDPattern(R"del(^\s*\[\s*%(\w+)\s*\]\s*$)del"),
-		REG_LITPattern(R"del(^\s*\[\s*%([a-zA-Z0-9]+)\s*\+\s*([0-9]\w*)\s*\]\s*$)del"),
-		REG_SYMPattern(R"del(^\s*\[\s*%([a-zA-Z0-9]+)\s*\+\s*([a-zA-Z]\w*)\s*\]\s*$)del") {}
-void Parser::toLower(std::string& s) {
-	for (int i = 0; i < s.length(); i++) s[i] = std::tolower(s[i]);
-}
-int Parser::parseLiteral(std::string lit) {
-	int res;
+		REG_LITPattern(R"del(^\s*\[\s*%([a-zA-Z0-9]+)\s*([+-]\s*[0-9]\w*)\s*\]\s*$)del"),
+		REG_SYMPattern(R"del(^\s*\[\s*%([a-zA-Z0-9]+)\s*\+\s*([a-zA-Z]\w*)\s*\]\s*$)del"),
+		HEX_LITPattern(R"del(^[+-]0x[0-9a-f]+$)del") {}
+long Parser::parseLiteral(std::string lit) {
+	long res;
 	try {
-		if (lit.length() > 1 && std::tolower(lit[1]) == 'x')
-			res = std::stoi(lit, nullptr, 16);
-		else res = std::stoi(lit);
+		lit = Converter::toLower(Converter::removeBlanks(lit));
+		if (std::regex_match(lit, HEX_LITPattern))
+			res = std::stol(lit, nullptr, 16);
+		else res = std::stol(lit);
 	}
 	catch (std::exception e) {
 		throw OperatorException("Parser::OperatorException: Incorrect literal value!");
@@ -32,7 +32,7 @@ int Parser::parseLiteral(std::string lit) {
 	return res;
 }
 int Parser::parseRegister(std::string reg) {
-	toLower(reg);
+	reg = Converter::toLower(reg);
 	if (reg == "status") return 0;
 	if (reg == "handler") return 1;
 	if (reg == "cause") return 2;
@@ -129,7 +129,7 @@ void Parser::parseAssemblerLine(std::string line, std::string* label, Directive*
 		//instruction
 		std::smatch match = *iter;
 		*label = match[1].str();
-		std::string mnemonic = match[2];
+		std::string mnemonic = Converter::toLower(match[2].str());
 
 		//parsing the operators
 		std::string operatorList = match[3];
