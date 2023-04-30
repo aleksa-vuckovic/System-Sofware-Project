@@ -1,14 +1,21 @@
 #pragma once
 #include "Instruction.h"
 #include <iostream>
-
 Instruction::Instruction(std::string mne, Operand* ops[3]) : mnemonic(mne) {
-		for (int i = 0; i < 3; i++) this->ops[i] = ops[i];
+	for (int i = 0; i < 3; i++) this->ops[i] = ops[i];
+}
+Operand* Instruction::getOperand(int i) {
+	return ops[i];
+}
+int Instruction::getOperandCount() {
+	int cnt = 0;
+	for (int i = 0; i < cnt; i++) if (ops[i]) cnt++;
+	return cnt;
 }
 Instruction::~Instruction() {
-	for (int i = 0; i < 3; i++) if (this->ops[i]) {
-		delete this->ops[i];
-		this->ops[i] = nullptr;
+	for (int i = 0; i < 3; i++) if (ops[i]) {
+		delete ops[i];
+		ops[i] = nullptr;
 	}
 }
 std::string Instruction::getMnemonic() {

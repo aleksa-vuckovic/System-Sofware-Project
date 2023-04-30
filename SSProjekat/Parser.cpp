@@ -140,7 +140,7 @@ void Parser::parseAssemblerLine(std::string line, std::string* label, Directive*
 			for (int i = 0; i < 3; i++) operators[i] = match[i + 1].str();
 		}
 		Operand* ops[3];
-		for (int i = 0; i < 3; i++) ops[i] = parseOperator(operators[i]);
+		for (int i = 0; i < 3; i++) ops[i] = parseOperator(operators[i]); //memleak
 		*insp = new Instruction(mnemonic, ops);
 		*dirp = nullptr;
 		return;
