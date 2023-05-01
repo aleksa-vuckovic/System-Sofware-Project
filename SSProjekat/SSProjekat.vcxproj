@@ -134,11 +134,17 @@
     <ClCompile Include="Operand.cpp" />
     <ClCompile Include="Parser.cpp" />
     <ClCompile Include="ParserTest.cpp" />
+    <ClCompile Include="Pool.cpp" />
+    <ClCompile Include="RelocationTable.cpp" />
+    <ClCompile Include="SymbolTable.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Converter.h" />
     <ClInclude Include="Exception.h" />
     <ClInclude Include="InstructionTranslator.h" />
+    <ClInclude Include="Pool.h" />
+    <ClInclude Include="RelocationTable.h" />
+    <ClInclude Include="SymbolTable.h" />
     <ClInclude Include="Tests.h" />
     <ClInclude Include="Instruction.h" />
     <ClInclude Include="Operand.h" />
