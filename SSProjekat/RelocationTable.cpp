@@ -42,3 +42,6 @@ std::string RelocationTable::str() {
 	}
 	return res;
 }
+int RelocationTable::getCount() {
+	return list->size();
+}

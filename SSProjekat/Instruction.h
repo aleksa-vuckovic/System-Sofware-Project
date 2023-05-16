@@ -1,11 +1,12 @@
 #ifndef _INSTRUCTION_H_
 #define _INSTRUCTION_H_
 #include "Operand.h"
+#include <vector>
 class Instruction {
 	std::string mnemonic;
-	Operand* ops[3];
+	std::vector<Operand*>* operands;
 public:
-	Instruction(std::string mne, Operand* ops[3]);
+	Instruction(std::string mne, std::vector<Operand*>* operands);
 	~Instruction();
 	std::string getMnemonic();
 	std::string str();
@@ -13,10 +14,14 @@ public:
 	int getOperandCount();
 };
 class Directive {
-public:
 	std::string name;
-	std::string args;
-	Directive(std::string name, std::string args);
+	std::vector<Operand*>* args;
+public:
+	Directive(std::string name, std::vector<Operand*>* args);
+	~Directive();
+	Operand* getOperand(int i);
+	int getOperandCount();
+	std::string getName();
 	std::string str();
 };
 #endif

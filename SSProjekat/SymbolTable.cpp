@@ -68,3 +68,7 @@ std::string SymbolTable::Entry::str()
 {
 	return std::to_string(value) + "," + type + "," + bind + "," + section + "," + name;
 }
+
+int SymbolTable::getCount() {
+	return table->size();
+}

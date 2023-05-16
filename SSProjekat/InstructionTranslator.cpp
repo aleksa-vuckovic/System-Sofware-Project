@@ -4,14 +4,14 @@
 std::string InstructionTranslator::mnemonics[] = {
 		"halt", "int", "iret", "call", "ret", "jmp", "beq", "bne",
 		"bgt", "push", "pop", "xchg", "add", "sub", "mul", "div",
-		"not", "and", "or", "xor", "shl", "shr", "ld"
+		"not", "and", "or", "xor", "shl", "shr", "ld", "st"
 };
 void InstructionTranslator::checkMnemonic(Instruction* ins) {
 	bool ok = false;
-	for (int i = 0; i < sizeof(mnemonics) / sizeof(std::string)) {
+	for (int i = 0; i < sizeof(mnemonics) / sizeof(std::string); i++) {
 		if (mnemonics[i] == ins->getMnemonic()) ok = true;
 	}
-	if (!ok) throw TranslationException("InstructionTranslator::TranslationException: Unrecognized mnemonic.");
+	if (!ok) throw TranslationException("InstructionTranslator::TranslationException: Unrecognized mnemonic: " + ins->getMnemonic() + ".");
 }
 void InstructionTranslator::checkOpNum(Instruction* ins, int num) {
 	if (ins->getOperandCount() != num) throw TranslationException("InstructionTranslator::TranslationException: Unexpected operand count.");
@@ -40,11 +40,11 @@ void InstructionTranslator::checkCSR(Operand* op) {
 void InstructionTranslator::checkLiteral(Operand* op) {
 	if (!op->hasLiteral()) return;
 	Operand::Type t = op->getType();
-	long min, max;
+	long long min, max;
 	if (t == Operand::IMM_LIT || t == Operand::REG_LIT) min = IMM_LIT_MIN, max = IMM_LIT_MAX;
 	else min = MEM_LIT_MIN, max = MEM_LIT_MAX;
-	long lit = op->getLiteral();
-	if (lit < min || lit > max) throw TranslationException("InstructionTranslator::TranslationException: Literal is out of range.");
+	long long lit = op->getLiteral();
+	if (lit < min || lit > max) throw TranslationException("InstructionTranslator::TranslationException: Literal " + std::to_string(lit) + " in operand " + op->str() + " is out of range.");
 }
 
 void InstructionTranslator::checkInstruction(Instruction* ins) {
@@ -86,29 +86,29 @@ void InstructionTranslator::checkInstruction(Instruction* ins) {
 }
 int InstructionTranslator::getSize(Instruction* ins) {
 	std::string m = ins->getMnemonic();
-	if (m == "iret" || m == "call") return 24;
-	if (m == "ret" || m == "push") return 16;
+	if (m == "iret" || m == "call") return 12;
+	if (m == "ret" || m == "push") return 8;
 	if (m == "ld") {
 		Operand* op = ins->getOperand(1);
 		Operand::Type t = op->getType();
 		if (t == Operand::MEM_LIT || t == Operand::MEM_SYM
-			|| t == Operand::REG_DIR || t == Operand::REG_IND) return 16;
-		else return 8;
+			|| t == Operand::REG_DIR || t == Operand::REG_IND) return 8;
+		else return 4;
 	}
 	if (m == "st") {
 		Operand* op = ins->getOperand(1);
 		Operand::Type t = op->getType();
-		if (t == Operand::REG_DIR || t == Operand::REG_IND) return 8;
-		else return 40;
+		if (t == Operand::REG_DIR || t == Operand::REG_IND) return 4;
+		else return 20;
 	}
-	return 8;
+	return 4;
 }
 
 std::string InstructionTranslator::addsp(int num) {
 	return "91EE0" + Converter::toHex(num, 3);
 }
 std::string InstructionTranslator::push(int reg) {
-	return std::string("91EE0FFC80E0") + Converter::hexChar(reg) + "as";
+	return std::string("91EE0FFC80E0") + Converter::hexChar(reg) + "000";
 }
 std::string InstructionTranslator::pop(int reg) {
 	return std::string("93") + Converter::hexChar(reg) + "E0004";
@@ -123,14 +123,14 @@ std::string InstructionTranslator::translate(Instruction* ins, int* litoffset, i
 		return addsp(8) + "960E0FFC92FE0FF8";
 	}
 	if (m == "call") {
-		*reloffset = 21;
+		*reloffset = 10;
 		return push(15) + "30F00000";
 	}
 	if (m == "ret") {
 		return addsp(4) + "92FE9FFC";
 	}
 	if (m == "jmp") {
-		*reloffset = 5;
+		*reloffset = 2;
 		return "30F00000";
 	}
 	if (m == "beq" || m == "bne" || m == "bgt") {
@@ -138,7 +138,7 @@ std::string InstructionTranslator::translate(Instruction* ins, int* litoffset, i
 		if (m == "beq") code = "31";
 		else if (m == "bne") code = "32";
 		else code = "33";
-		*reloffset = 5;
+		*reloffset = 2;
 		int regA = ins->getOperand(0)->getRegister();
 		int regB = ins->getOperand(1)->getRegister();
 		return code + "F" + Converter::hexChar(regA) + Converter::hexChar(regB) + "000";
@@ -188,11 +188,11 @@ std::string InstructionTranslator::translate(Instruction* ins, int* litoffset, i
 		Operand::Type t = op->getType();
 		char regA = Converter::hexChar(ins->getOperand(1)->getRegister());
 		if (t == Operand::IMM_LIT || t == Operand::IMM_SYM) {
-			*litoffset = 5;
+			*litoffset = 2;
 			return std::string("92") + regA +"F0000";
 		}
 		if (t == Operand::MEM_LIT || t == Operand::MEM_SYM) {
-			*litoffset = 5;
+			*litoffset = 2;
 			return std::string("92") + regA + "F000092AA0000";
 		}
 		if (t == Operand::REG_DIR) {
@@ -200,7 +200,7 @@ std::string InstructionTranslator::translate(Instruction* ins, int* litoffset, i
 			return std::string("01") + regA + regB + "0000";
 		}
 		else {
-			*litoffset = 5;
+			*litoffset = 2;
 			char regB = Converter::hexChar(op->getRegister());
 			return std::string("92") + regA + "F000092" + regA + regA + regB + "000";
 		}
@@ -211,7 +211,7 @@ std::string InstructionTranslator::translate(Instruction* ins, int* litoffset, i
 		char regA = Converter::hexChar(ins->getOperand(0)->getRegister());
 		if (t == Operand::MEM_LIT || t == Operand::MEM_SYM) {
 			char regC = regA == '1' ? '2' : '1';
-			*litoffset = 21;
+			*litoffset = 10;
 			return push(regC - '0') + "92" + regC + "F000080" + regC + "0" + regA + "000" + pop(regC - '0');
 		}
 		char regB = Converter::hexChar(ins->getOperand(1)->getRegister());
@@ -223,7 +223,7 @@ std::string InstructionTranslator::translate(Instruction* ins, int* litoffset, i
 		}
 		else {
 			char regC = regA == '1' ? '2' : '1';
-			*litoffset = 21;
+			*litoffset = 10;
 			return push(regC - '0') + "92" + regC + "F000080" + regB + regC + regA + "000" + pop(regC - '0');
 		}
 	}
@@ -232,4 +232,39 @@ std::string InstructionTranslator::translate(Instruction* ins, int* litoffset, i
 		char regB = ins->getOperand(1)->getRegister();
 		return std::string(m == "csrrd" ? "90" : "91") + regB + regA + "0000";
 	}
+}
+
+void InstructionTranslator::checkDirective(Directive* dir) {
+	std::string name = dir->getName();
+	int opCnt = dir->getOperandCount();
+	if (name == "global" || name == "extern") {
+		for (int i = 0; i < opCnt; i++) if (dir->getOperand(i)->getType() != Operand::MEM_SYM) throw TranslationException("InstructionTranslator::TranslationException: Expected symbol.");
+	}
+	else if (name == "section") {
+		if (opCnt != 1) throw TranslationException("InstructionTranslator::TranslationException: Unexpected number of arguments for section directive.");
+		if (dir->getOperand(0)->getType() != Operand::MEM_SYM) throw TranslationException("InstructionTranslator::TranslationException: Expected a symbol for the section directive.");
+	}
+	else if (name == "word") {
+		for (int i = 0; i < opCnt; i++) {
+			if (dir->getOperand(i)->getType() != Operand::MEM_SYM && dir->getOperand(i)->getType() != Operand::MEM_LIT) throw TranslationException("InstructionTranslator::TranslationException: Unexpected operand for word directive. (operand = " + dir->getOperand(i)->str() + ")");
+			if (dir->getOperand(i)->getType() == Operand::MEM_LIT) {
+				long long lit = dir->getOperand(i)->getLiteral();
+				if (lit < IMM_LIT_MIN || lit > IMM_LIT_MAX) throw TranslationException("InstructionTranslator::TranslationException: Literal in .word directive is out of range.");
+			}
+		}
+	}
+	else if (name == "skip") {
+		if (opCnt != 1) throw TranslationException("InstructionTranslator::TranslationException: Unexpected number of arguments for skip directive.");
+		if (dir->getOperand(0)->getType() != Operand::MEM_LIT) throw TranslationException("InstructionTranslator::TranslationException: Unexpected operand type for skip directive.");
+	}
+	else if (name == "end") {
+		if (opCnt != 0) throw TranslationException("InstructionTranslator::TranslationException: Unexpected number of arguments for end directive.");
+	}
+	else throw TranslationException("InstructionTranslator::TranslationException: Invalid directive name.");
+}
+int InstructionTranslator::getSize(Directive* dir) {
+	std::string name = dir->getName();
+	if (name == "word") return dir->getOperandCount();
+	else if (name == "skip") return dir->getOperand(0)->getLiteral();
+	else return 0;
 }

@@ -4,8 +4,8 @@
 #include <list>
 #include "Exception.h"
 
-#define REL_PC12 "REL_PC12"
-#define REL_32	"REL_32"
+#define REL_PC12 "REL_PC12" //symbol - pc + addend (12 bits), 4 bits past the address
+#define REL_32	"REL_32" //symbol + addend (32 bits)
 
 class RelocationTable {
 public:
@@ -32,6 +32,7 @@ public:
 	void addEntryFromFile(std::string line);
 	std::list<Entry>* getEntries();
 	std::string str();
+	int getCount();
 };
 
 #endif

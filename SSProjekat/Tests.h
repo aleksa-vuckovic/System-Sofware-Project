@@ -3,4 +3,5 @@
 
 
 void testParser();
+void testAssembler();
 #endif

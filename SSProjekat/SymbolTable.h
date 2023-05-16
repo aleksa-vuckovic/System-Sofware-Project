@@ -8,10 +8,10 @@ class SymbolTable {
 public:
 	struct Entry {
 		unsigned value;
-		char type; //S - section, O - object
+		char type; //S - section, O - object, U - undefined
 		char bind; //G - global, L - local
-		std::string section;
-		std::string name;
+		std::string section; //
+		std::string name; //
 		Entry(unsigned val, char type, char bind, std::string section, std::string name);
 		std::string str();
 	};
@@ -32,6 +32,7 @@ public:
 
 	void addEntryFromFile(std::string line);
 	std::string str();
+	int getCount();
 };
 
 #endif

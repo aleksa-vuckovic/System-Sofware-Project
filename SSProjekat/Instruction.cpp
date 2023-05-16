@@ -1,30 +1,53 @@
 #pragma once
 #include "Instruction.h"
 #include <iostream>
-Instruction::Instruction(std::string mne, Operand* ops[3]) : mnemonic(mne) {
-	for (int i = 0; i < 3; i++) this->ops[i] = ops[i];
-}
+Instruction::Instruction(std::string mne, std::vector<Operand*>* ops) : mnemonic(mne), operands(ops) {}
 Operand* Instruction::getOperand(int i) {
-	return ops[i];
+	return operands->at(i);
 }
 int Instruction::getOperandCount() {
-	int cnt = 0;
-	for (int i = 0; i < cnt; i++) if (ops[i]) cnt++;
-	return cnt;
+	return operands->size();
 }
 Instruction::~Instruction() {
-	for (int i = 0; i < 3; i++) if (ops[i]) {
-		delete ops[i];
-		ops[i] = nullptr;
-	}
+	Operand::freeOperandList(operands);
+	operands = nullptr;
 }
 std::string Instruction::getMnemonic() {
 	return mnemonic;
 }
 std::string Instruction::str() {
-	return mnemonic + " " + (ops[0] ? ops[0]->str() + (ops[1] ? ", " + ops[1]->str() + (ops[2] ? ", " + ops[2]->str() : "") : "") : "");
+	std::string res = mnemonic;
+	for (int i = 0; i < operands->size(); i++) {
+		if (i == 0) res += " ";
+		else res += ", ";
+		res += operands->at(i)->str();
+	}
+	return res;
 }
-Directive::Directive(std::string name, std::string args) : name(name), args(args) {}
+
+Directive::Directive(std::string name, std::vector<Operand*>* args) {
+	this->name = name;
+	this->args = args;
+}
+Directive::~Directive() {
+	Operand::freeOperandList(args);
+	args = nullptr;
+}
+Operand* Directive::getOperand(int i) {
+	return args->at(i);
+}
+int Directive::getOperandCount() {
+	return args->size();
+}
+std::string Directive::getName() {
+	return name;
+}
 std::string Directive::str() {
-	return "." + name + " " + args;
+	std::string res = "." + name + " ";
+	for (auto it = args->begin(); it != args->end();) {
+		res += (*it)->str();
+		it++;
+		if (it != args->end()) res += ", ";
+	}
+	return res;
 }

@@ -1,16 +1,17 @@
 #include "Converter.h"
 
-std::string Converter::toHex32(long lit) {
+std::string Converter::toHex32(long long lit) {
 	return toHex(lit, 8);
 }
-std::string Converter::toHex(long num, int digs) {
-	if (num < 0) num = 1l << digs + num;
+std::string Converter::toHex(long long num, int digs) {
+	if (num < 0) num = (1ll << digs*4) + num;
 	std::string res = "";
 	for (int i = digs - 1; i >= 0; i--) {
 		int dig = num % 16;
 		res = hexChar(dig) + res;
 		num /= 16;
 	}
+	return res;
 }
 
 char Converter::hexChar(int dig) {

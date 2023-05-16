@@ -6,8 +6,8 @@
 #define GPR_MAX 15
 #define CSR_MIN 0
 #define CSR_MAX 2
-#define IMM_LIT_MIN -0x80000000l
-#define IMM_LIT_MAX 0xFFFFFFFFl
+#define IMM_LIT_MIN -(1ll << 31)
+#define IMM_LIT_MAX 0xFFFFFFFFll
 #define MEM_LIT_MIN 0
 #define MEM_LIT_MAX IMM_LIT_MAX
 
@@ -41,12 +41,15 @@ public:
 	void checkInstruction(Instruction* ins);
 	//It is assumed that the instruction has been checked by calling checkingInstruction, before
 	// all of the following methods
-	//returns the size IN CHARS (which is 2x more than the number of bytes, if actual binary files were used instead of text files)
+	//returns the size IN BYTES (which is 2x less than the number of chars)
 	int getSize(Instruction* ins);
 	//litoffset is the offset in chars, relative to the start of the translated instruction, where the offset to the literal pool is to be inserted
 	//reloffset is the offset in chars, relative to the start of the translated instruction, where the location that requires a pc relative relocation is
 	std::string translate(Instruction* ins, int* litoffset, int* reloffset);
 
+
+	void checkDirective(Directive* dir);
+	int getSize(Directive* dir);
 };
 
 #endif

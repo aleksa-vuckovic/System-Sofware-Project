@@ -1,11 +1,12 @@
 #ifndef _OPERAND_H_
 #define _OPERAND_H_
 #include <string>
+#include <vector>
 class Operand {
 public:
 	typedef enum Type { IMM_LIT, IMM_SYM, MEM_LIT, MEM_SYM, REG_DIR, REG_IND, REG_LIT, REG_SYM } Type;
 	virtual std::string getSymbol();
-	virtual long getLiteral() { return 0; }
+	virtual long long getLiteral() { return 0; }
 	virtual int getRegister() { return 0; }
 	virtual Type getType() = 0;
 
@@ -14,24 +15,26 @@ public:
 	virtual bool hasSymbol() { return false; }
 	virtual std::string str() = 0;
 	virtual ~Operand();
+
+	static void freeOperandList(std::vector<Operand*>* list);
 };
 class LiteralOperand : public virtual Operand {
-	long val;
+	long long val;
 public:
-	LiteralOperand(long val);
-	long getLiteral() override;
+	LiteralOperand(long long val);
+	long long getLiteral() override;
 	bool hasLiteral() override { return true; }
 	std::string str();
 };
 class ImmediateLiteralOperand : public LiteralOperand {
 public:
-	ImmediateLiteralOperand(long val);
+	ImmediateLiteralOperand(long long val);
 	Type getType();
 	std::string str();
 };
 class MemoryLiteralOperand : public LiteralOperand {
 public:
-	MemoryLiteralOperand(long val);
+	MemoryLiteralOperand(long long val);
 	Type getType();
 };
 class SymbolOperand : public virtual Operand {
@@ -40,6 +43,7 @@ public:
 	SymbolOperand(std::string sym);
 	std::string getSymbol();
 	std::string str();
+	bool hasSymbol() override { return true; }
 };
 class ImmediateSymbolOperand : public SymbolOperand {
 public:
@@ -72,7 +76,7 @@ public:
 };
 class LiteralRegisterOperand : public RegisterOperand, public LiteralOperand {
 public:
-	LiteralRegisterOperand(long val, int reg);
+	LiteralRegisterOperand(long long val, int reg);
 	Type getType();
 	std::string str();
 };

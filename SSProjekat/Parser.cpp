@@ -4,30 +4,58 @@
 #include <cctype>
 #include "Operand.h"
 #include "Converter.h"
+#include <iostream>
 
-Parser::Parser() : directivePattern(R"del(^\s*(?:(\w+):)?\s*\.(\w+)\s+(.*)$)del"),
+Parser::Parser() : directivePattern(R"del(^\s*(?:(\w+):)?\s*\.(\w+)\s*(.*)$)del"),
 		instructionPattern(R"del(^\s*(?:(\w+):)?\s*(\w{2,4})\s*(.*)$)del"),
 		labelOnlyPattern(R"del(^\s*(\w+):\s*$)del"),
-		operatorListPattern(R"del(^([^,]+)(?:,([^,]+)(?:,([^,]+))?)?$)del"),
+		commaSeparatorPattern(R"del(^([^,]*)(,.*)?$)del"),
 		IMM_LITPattern(R"del(^\s*\$([+-]?[0-9]\w*)\s*$)del"),
-		IMM_SYMPattern(R"del(^\s*\$([a-zA-Z]\w*)\s*$)del"),
-		MEM_LITPattern(R"del(^\s*([0-9]\w*)\s*$)del"),
-		MEM_SYMPattern(R"del(^\s*([a-zA-Z]\w*)\s*$)del"),
+		IMM_SYMPattern(R"del(^\s*\$([a-zA-Z.]\w*)\s*$)del"),
+		MEM_LITPattern(R"del(^\s*([+-]?[0-9]\w*)\s*$)del"),
+		MEM_SYMPattern(R"del(^\s*([a-zA-Z.]\w*)\s*$)del"),
 		REG_DIRPattern(R"del(^\s*%(\w+)\s*$)del"),
 		REG_INDPattern(R"del(^\s*\[\s*%(\w+)\s*\]\s*$)del"),
 		REG_LITPattern(R"del(^\s*\[\s*%([a-zA-Z0-9]+)\s*([+-]\s*[0-9]\w*)\s*\]\s*$)del"),
-		REG_SYMPattern(R"del(^\s*\[\s*%([a-zA-Z0-9]+)\s*\+\s*([a-zA-Z]\w*)\s*\]\s*$)del"),
-		HEX_LITPattern(R"del(^[+-]0x[0-9a-f]+$)del") {}
-long Parser::parseLiteral(std::string lit) {
-	long res;
+		REG_SYMPattern(R"del(^\s*\[\s*%([a-zA-Z0-9]+)\s*\+\s*([a-zA-Z.]\w*)\s*\]\s*$)del"),
+		HEX_LITPattern(R"del(^[+-]?0x[0-9a-f]+$)del") {}
+std::string Parser::getNextCSV(std::string& input) {
+	std::sregex_iterator iter = std::sregex_iterator(input.begin(), input.end(), commaSeparatorPattern);
+	std::sregex_iterator end;
+	if (iter != end) {
+		std::smatch match = *iter;
+		std::string res = match[1].str();
+		input = match[2].str();
+		return res;
+	}
+	return "";
+}
+std::vector<Operand*>* Parser::getOperands(std::string operandList) {
+	std::vector<Operand*> *res = new std::vector<Operand*>();
+	try {
+		while (operandList != "") {
+			std::string opstr = getNextCSV(operandList);
+			res->push_back(parseOperand(opstr));
+			if (operandList != "") operandList.erase(0, 1);
+		}
+	}
+	catch (OperandException& e) {
+		Operand::freeOperandList(res);
+		throw;
+	}
+	return res;
+
+}
+long long Parser::parseLiteral(std::string lit) {
+	long long res;
 	try {
 		lit = Converter::toLower(Converter::removeBlanks(lit));
 		if (std::regex_match(lit, HEX_LITPattern))
-			res = std::stol(lit, nullptr, 16);
-		else res = std::stol(lit);
+			res = std::stoll(lit, nullptr, 16);
+		else res = std::stoll(lit);
 	}
 	catch (std::exception e) {
-		throw OperatorException("Parser::OperatorException: Incorrect literal value!");
+		throw OperandException("Parser::OperandException: Incorrect literal value!");
 	}
 	return res;
 }
@@ -38,22 +66,24 @@ int Parser::parseRegister(std::string reg) {
 	if (reg == "cause") return 2;
 	if (reg == "sp") return 14;
 	if (reg == "pc") return 15;
-	if (reg[0] != 'r') throw OperatorException("Parser::OperatorException: Incorrect register operator!");
+	if (reg[0] != 'r') throw OperandException("Parser::OperandException: Incorrect register operator!");
 	std::string num = reg.substr(1);
 	int res;
 	try {
 		res = std::stoi(num);
 	}
 	catch (std::exception e) {
-		throw OperatorException("Parser::OperatorException: Incorrect register operator number!");
+		throw OperandException("Parser::OperandException: Incorrect register operand number!");
 	}
-	if (res < 0 || res > 15) throw OperatorException("Parser::OperatorException: Incorrect register operator number!");
+	if (res < 0 || res > 15) throw OperandException("Parser::OperandException: Incorrect register operand number!");
 	return res;
 }
-Operand* Parser::parseOperator(std::string operand) {
+Operand* Parser::parseOperand(std::string operand) {
 	if (operand == "") return nullptr;
 	std::sregex_iterator end;
 	std::sregex_iterator iter = std::sregex_iterator(operand.begin(), operand.end(), IMM_LITPattern);
+	bool f = false;
+	if (operand == "-1") f = true;
 	if (iter != end) {
 		std::smatch match = *iter;
 		return new ImmediateLiteralOperand(parseLiteral(match[1].str()));
@@ -99,7 +129,7 @@ Operand* Parser::parseOperator(std::string operand) {
 		std::string sym = match[2].str();
 		return new SymbolRegisterOperand(sym, reg);
 	}
-	throw OperatorException("Parser::OperatorException: Invalid operand expression: " + operand);
+	throw OperandException("Parser::OperandException: Invalid operand expression: " + operand);
 }
 void Parser::parseAssemblerLine(std::string line, std::string* label, Directive** dirp, Instruction** insp) {
 	std::sregex_iterator iter(line.begin(), line.end(), directivePattern);
@@ -119,7 +149,11 @@ void Parser::parseAssemblerLine(std::string line, std::string* label, Directive*
 		//directive
 		std::smatch match = *iter;
 		*label = match[1].str();
-		*dirp = new Directive(match[2].str(), match[3].str());
+		std::string name = match[2].str();
+		std::string operandList = match[3].str();
+
+		std::vector<Operand*>* operands = getOperands(operandList);
+		*dirp = new Directive(name, operands);
 		*insp = nullptr;
 		return;
 	}
@@ -132,16 +166,9 @@ void Parser::parseAssemblerLine(std::string line, std::string* label, Directive*
 		std::string mnemonic = Converter::toLower(match[2].str());
 
 		//parsing the operators
-		std::string operatorList = match[3];
-		iter = std::sregex_iterator(operatorList.begin(), operatorList.end(), operatorListPattern);
-		std::string operators[3] = { "", "", "" };
-		if (iter != end) {
-			std::smatch match = *iter;
-			for (int i = 0; i < 3; i++) operators[i] = match[i + 1].str();
-		}
-		Operand* ops[3];
-		for (int i = 0; i < 3; i++) ops[i] = parseOperator(operators[i]); //memleak
-		*insp = new Instruction(mnemonic, ops);
+		std::string operandList = match[3];
+		std::vector<Operand*>* operands = getOperands(operandList);
+		*insp = new Instruction(mnemonic, operands);
 		*dirp = nullptr;
 		return;
 	}
