@@ -3,6 +3,7 @@
 #include <string>
 #include <map>
 #include <set>
+#include <unordered_map>
 #include "Exception.h"
 class SymbolTable {
 public:
@@ -33,6 +34,11 @@ public:
 	void addEntryFromFile(std::string line);
 	std::string str();
 	int getCount();
+	void mergeEntries(SymbolTable* symTab, std::unordered_map<std::string, int>* sectionLocs);
+	bool isDefined(std::string name);
+	bool isUndefined(std::string name);
+	void remove(std::string name);
+	void checkNoUndef();
 };
 
 #endif

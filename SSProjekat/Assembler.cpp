@@ -3,7 +3,7 @@
 #include "Parser.h"
 #include <map>
 #include <regex>
-#define USER_SECTION_LINE_LEN 40
+
 
 
 

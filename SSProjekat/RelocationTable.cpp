@@ -1,6 +1,9 @@
 #include "RelocationTable.h"
 #include <string>
 #include <regex>
+#include "Converter.h"
+#define MAX_PC12 ((1 << 11) - 1)
+#define MIN_PC12 (-(1 << 11))												
 
 
 RelocationTable::Entry::Entry(int offset, std::string type, std::string symbol, int addend) {
@@ -44,4 +47,32 @@ std::string RelocationTable::str() {
 }
 int RelocationTable::getCount() {
 	return list->size();
+}
+std::string RelocationTable::apply(std::string data, int baseAddr, SymbolTable* symTab) {
+	for (auto it = list->begin(); it != list->end(); it++) {
+		if (it->type == REL_PC12) {
+			int pc = baseAddr + it->offset;
+			int val = it->addend - pc;
+			if (it->symbol != "") val += symTab->getEntry(it->symbol)->value;
+			int start = it->offset * 2 + 1;
+			data.replace(start, 3, Converter::toHex(val, 3));
+		}
+		else if (it->type == REL_32) {
+			int val = it->addend;
+			if (it->symbol != "") val += symTab->getEntry(it->symbol)->value;
+			int start = it->offset * 2;
+			data.replace(start, 8, Converter::toHex32(val));
+		}
+	}
+}
+void RelocationTable::merge(RelocationTable* relTable, int baseAddr, std::unordered_map<std::string, int>* localSegmentLocs) {
+	for (auto it = relTable->list->begin(); it != relTable->list->end(); it++) {
+		Entry entry(*it);
+		if (localSegmentLocs->find(entry.symbol) != localSegmentLocs->end()) {
+			//It's a section symbol, meaning that addend should be adjusted according to the new position of the section
+			entry.addend += localSegmentLocs->at(entry.symbol);
+		}
+		entry.offset += baseAddr;
+		list->push_back(entry);
+	}
 }

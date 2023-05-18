@@ -24,23 +24,18 @@ public:
 		}
 	};
 private:
-	std::list<Entry>* entries;
+	std::vector<Entry>* entries;
 	
 
 public:
 	SectionHeaderTable() {
-		entries = new std::list<Entry>();
+		entries = new std::vector<Entry>();
 	}
 	void addEntry(std::string name, char type, int offset, int size) {
 		entries->push_back(Entry(name, type, offset, size));
 	}
 	void addEntryFromFile(std::string line) {
-		std::regex pattern(R"del(^(\w+),\w,(\d+),(\d+)$)del");
-		std::sregex_iterator iter = std::sregex_iterator(line.begin(), line.end(), pattern);
-		std::sregex_iterator end;
-		if (iter == end) throw Exception("SectionHeaderTable: Invalid input file content.");
-		std::smatch match = *iter;
-		addEntry(match[1].str(), match[2].str().at(0), std::stoi(match[3].str()), std::stoi(match[4].str()));
+		entries->push_back(getEntryFromFile(line));
 	}
 	std::string str() {
 		std::string result = "SECTION HEADER TABLE\n";
@@ -49,7 +44,20 @@ public:
 		}
 		return result;
 	}
-
+	Entry getEntryFromFile(std::string line) {
+		std::regex pattern(R"del(^(\w+),\w,(\d+),(\d+)\s*$)del");
+		std::sregex_iterator iter = std::sregex_iterator(line.begin(), line.end(), pattern);
+		std::sregex_iterator end;
+		if (iter == end) throw Exception("SectionHeaderTable: Invalid input file content.");
+		std::smatch match = *iter;
+		return Entry(match[1].str(), match[2].str().at(0), std::stoi(match[3].str()), std::stoi(match[4].str()));
+	}
+	int getCount() {
+		return entries->size();
+	}
+	Entry getEntry(int i) {
+		return entries->at(i);
+	}
 };
 
 #endif

@@ -217,6 +217,9 @@ void Section::finishPhase2(SymbolTable* symTab) {
 }
 
 std::string Section::str(int max_line_length) {
+	return str(name, data, max_line_length);
+}
+std::string str(std::string name, std::string data, int max_line_length) {
 	std::string res = name + "\n";
 	for (int i = 0; i < data.length(); i += max_line_length) {
 		int len = i + max_line_length > data.length() ? data.length() - i : max_line_length;
@@ -225,6 +228,9 @@ std::string Section::str(int max_line_length) {
 	return res;
 }
 int Section::getRowCount(int max_line_length) {
+	return getRowCount(data, max_line_length);
+}
+int Section::getRowCount(std::string data, int max_line_length) {
 	return (data.length() - 1 + max_line_length) / max_line_length;
 }
 RelocationTable* Section::getRelTable() {

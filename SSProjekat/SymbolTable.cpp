@@ -1,5 +1,6 @@
 #include "SymbolTable.h"
 #include <regex>
+#include <unordered_map>
 #include <string>
 SymbolTable::SymbolTable() {
 	table = new std::map<std::string, Entry*>();
@@ -71,4 +72,38 @@ std::string SymbolTable::Entry::str()
 
 int SymbolTable::getCount() {
 	return table->size();
+}
+void SymbolTable::mergeEntries(SymbolTable* symTab, std::unordered_map<std::string, int>* sectionLocs) {
+	for (auto it = symTab->table->begin(); it != symTab->table->end(); it++) {
+		std::string sym = it->first;
+		Entry* entry = it->second;
+		if (entry->bind == 'L') continue;
+		if (entry->section == "*UND*") {
+			if (contains(entry->name)) continue;
+			Entry* e = new Entry(0, 'U', 'U', "*UND*", entry->name);
+			table->insert({ entry->name, e});
+		}
+		else {
+			if (isDefined(entry->name)) throw SymbolException("SymbolTable::SymbolException: Double definition of symbol " + entry->name + ".");
+			if (isUndefined(entry->name)) remove(entry->name);
+			
+			Entry* e = new Entry(sectionLocs->at(entry->section) + entry->value, entry->type, 'G', entry->section, entry->name);
+			table->insert({ entry->name, e });
+		}
+	}
+}
+bool SymbolTable::isDefined(std::string name) {
+	return contains(name) && table->at(name)->section != "*UND*";
+}
+bool SymbolTable::isUndefined(std::string name) {
+	return contains(name) && table->at(name)->section == "*UND*";
+}
+void SymbolTable::remove(std::string name) {
+	if (contains(name)) table->erase(name);
+}
+
+void SymbolTable::checkNoUndef() {
+	for (auto it = table->begin(); it != table->end(); it++) {
+		if (it->second->section == "*UND*") throw SymbolException("SymbolTable::SymbolException: Undefined symbol " + it->second->name + ".");
+	}
 }

@@ -9,6 +9,7 @@
 #include "SymbolTable.h"
 #define MAX_PCREL_OFFSET 0x7FFFFF
 #define MIN_PCREL_OFFSET -0x800000
+#define USER_SECTION_LINE_LEN 40
 class Section {
 	InstructionTranslator* translator;
 	Instruction* segmentEndInstruction;
@@ -58,7 +59,9 @@ public:
 	std::string getName();
 
 	std::string str(int max_line_length);
+	static std::string str(std::string name, std::string data, int max_line_length);
 	int getRowCount(int max_line_length);
+	static int getRowCount(std::string data, int max_line_length);
 	RelocationTable* getRelTable();
 };
 
