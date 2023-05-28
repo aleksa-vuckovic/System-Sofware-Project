@@ -9,26 +9,26 @@
 #include "Assembler.h"
 
 
-SymbolTable* Linker::readSymTable(std::ifstream& is) {
-	is.seekg(0);
+SymbolTable* Linker::readSymTable(std::ifstream* is) {
+	is->seekg(0);
 	std::string line;
-	std::getline(is, line);
-	std::getline(is, line);
+	std::getline(*is, line);
+	std::getline(*is, line);
 	int sectionCount = std::stoi(line);
-	std::getline(is, line);
+	std::getline(*is, line);
 	SectionHeaderTable sht;
 	int curline = 3;
 	for (int i = 0; i < sectionCount; i++) {
-		std::getline(is, line);
+		std::getline(*is, line);
 		curline++;
 		SectionHeaderTable::Entry entry = sht.getEntryFromFile(line);
 		if (entry.name == "SYMTAB") {
 			int start = entry.offset + 1;
 			int cnt = entry.size - 1;
-			while (curline != start) curline++, std::getline(is, line);
+			while (curline != start) curline++, std::getline(*is, line);
 			SymbolTable* ret = new SymbolTable();
 			for (int i = 0; i < cnt; i++) {
-				std::getline(is, line);
+				std::getline(*is, line);
 				ret->addEntryFromFile(line);
 			}
 			return ret;
@@ -37,32 +37,32 @@ SymbolTable* Linker::readSymTable(std::ifstream& is) {
 	return nullptr;
 }
 
-void Linker::readSections(std::ifstream& input, std::unordered_map<std::string, std::string>* data, std::unordered_map<std::string, RelocationTable*>* rels) {
+void Linker::readSections(std::ifstream* input, std::unordered_map<std::string, std::string>* data, std::unordered_map<std::string, RelocationTable*>* rels) {
 	std::string line;
 
 	//Skipping the title.
-	std::getline(input, line);
+	std::getline(*input, line);
 	//Reading the number of entries in the SHT.
-	std::getline(input, line);
+	std::getline(*input, line);
 	int sectionCnt = std::stoi(line);
 	//Skipping the title.
-	std::getline(input, line);
+	std::getline(*input, line);
 	SectionHeaderTable sht;
 	//Reading the SHT.
 	for (int j = 0; j < sectionCnt; j++) {
-		std::getline(input, line);
+		std::getline(*input, line);
 		sht.addEntryFromFile(line);
 	}
 	//Reading all of the sections.
 	for (int j = 0; j < sht.getCount(); j++) {
 		//Assuming that the order of entries in the SHT is the same as the order in the file.
 		SectionHeaderTable::Entry entry = sht.getEntry(j);
-		std::getline(input, line);
+		std::getline(*input, line);
 		int lines = entry.size - 1;
 		if (entry.type == 'L') {
 			std::string result = "";
 			for (int k = 0; k < lines; k++) {
-				std::getline(input, line);
+				std::getline(*input, line);
 				result += line;
 				if (result.back() == '\n') result.erase(result.length() - 1);
 			}
@@ -71,19 +71,19 @@ void Linker::readSections(std::ifstream& input, std::unordered_map<std::string, 
 		else if (entry.type == 'R') {
 			RelocationTable* res = new RelocationTable(entry.name);
 			for (int k = 0; k < lines; k++) {
-				std::getline(input, line);
+				std::getline(*input, line);
 				res->addEntryFromFile(line);
 			}
 			rels->insert({ entry.name.substr(5), res });
 		}
 		else if (entry.type == 'S') {
 			//Skipping the symbol table
-			for (int k = 0; k < lines; k++) std::getline(input, line);
+			for (int k = 0; k < lines; k++) std::getline(*input, line);
 		}
 	}
 }
 
-void Linker::readSections(std::ifstream inputs[], int cnt, std::vector<std::unordered_map<std::string, std::string>*>* data, std::vector<std::unordered_map<std::string, RelocationTable*>*>* rels, std::unordered_map<std::string, int>* finalSizes) {
+void Linker::readSections(std::ifstream* inputs[], int cnt, std::vector<std::unordered_map<std::string, std::string>*>* data, std::vector<std::unordered_map<std::string, RelocationTable*>*>* rels, std::unordered_map<std::string, int>* finalSizes) {
 	for (int i = 0; i < cnt; i++) {
 		std::unordered_map<std::string, std::string>* fileData = new std::unordered_map<std::string, std::string>();
 		data->push_back(fileData);
@@ -140,7 +140,7 @@ void Linker::calculateSegmentLocations(std::vector<std::unordered_map<std::strin
 	}
 }
 
-SymbolTable* Linker::getMergedSymbolTable(std::ifstream inputs[], int cnt, std::vector<std::unordered_map<std::string, int>*>* localSegmentLocations) {
+SymbolTable* Linker::getMergedSymbolTable(std::ifstream* inputs[], int cnt, std::vector<std::unordered_map<std::string, int>*>* localSegmentLocations) {
 	SymbolTable* symTab = new SymbolTable();
 	for (int i = 0; i < cnt; i++) {
 		SymbolTable* t = readSymTable(inputs[i]);
@@ -150,7 +150,7 @@ SymbolTable* Linker::getMergedSymbolTable(std::ifstream inputs[], int cnt, std::
 	return symTab;
 }
 
-std::string Linker::link(std::ifstream inputs[], int cnt, std::unordered_map<std::string, int>* locs) {
+std::string Linker::link(std::ifstream* inputs[], int cnt, std::unordered_map<std::string, int>* locs) {
 	//The final starting locations of every section.
 	std::unordered_map<std::string, int> finalLocs;
 	//The final sizes of every section.
@@ -197,7 +197,7 @@ std::string Linker::link(std::ifstream inputs[], int cnt, std::unordered_map<std
 		for (auto it = data->begin(); it != data->end(); it++) {
 			std::string data = it->second;
 			RelocationTable* rel = rels->at(it->first);
-			data = rel->apply(data, localSegmentLocs->at(it->first), symTab);
+			data = rel->apply(data, localSegmentLocs->at(it->first), symTab, localSegmentLocs);
 			if (finalData.find(it->first) == finalData.end()) finalData.insert({ it->first, data });
 			else finalData[it->first] += data;
 		}
@@ -246,7 +246,7 @@ std::string Linker::link(std::ifstream inputs[], int cnt, std::unordered_map<std
 
 }
 
-std::string Linker::merge(std::ifstream inputs[], int cnt) {
+std::string Linker::merge(std::ifstream* inputs[], int cnt) {
 	std::unordered_map<std::string, RelocationTable*> finalRelTables;
 	std::unordered_map<std::string, std::string> finalData;
 	std::vector<std::unordered_map<std::string, int>*> localSegmentLocations;

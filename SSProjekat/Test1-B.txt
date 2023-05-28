@@ -1,0 +1,8 @@
+.extern var
+.global f
+.section .text
+f: ld $97, %r1
+ld var, %r2
+add %r2, %r1
+st %r1, var
+ret

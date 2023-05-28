@@ -156,6 +156,7 @@
     <ClInclude Include="Pool.h" />
     <ClInclude Include="Registers.h" />
     <ClInclude Include="RelocationTable.h" />
+    <ClInclude Include="resource.h" />
     <ClInclude Include="Section.h" />
     <ClInclude Include="SectionHeaderTable.h" />
     <ClInclude Include="SymbolTable.h" />
@@ -163,6 +164,19 @@
     <ClInclude Include="Instruction.h" />
     <ClInclude Include="Operand.h" />
     <ClInclude Include="Parser.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="Test1-A.txt" />
+    <Text Include="Test1-B.txt" />
+    <Text Include="Test2-A.txt" />
+    <Text Include="Test2-B.txt" />
+    <Text Include="Test2-C.txt" />
+    <Text Include="Test3-A.txt" />
+    <Text Include="Test3-B.txt" />
+    <Text Include="Test3-C.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="SSProjekat.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

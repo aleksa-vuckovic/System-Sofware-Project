@@ -1,0 +1,27 @@
+.extern len
+.extern arr
+.extern insertionSortIteration
+.extern printarr
+
+.section .main
+ld $0x100, %sp
+ld $arr, %r1
+ld $0, %r2
+ld len, %r3
+
+loop:
+beq %r2, %r3, end
+push %r1
+push %r2
+push %r3
+call insertionSortIteration
+pop %r3
+pop %r2
+pop %r1
+ld $1, %r4
+add %r4, %r2
+jmp loop
+
+end:
+call printarr
+halt

@@ -20,6 +20,7 @@ private:
 	Memory mem;
 	Registers regs;
 	bool start = true;
+	std::string* output = nullptr;
 	/*
 	* This method executes the instruction, modifying the relevan registers and memory locations.
 	* However, if an interrupt happens, for example because of a bad instruction code, or an interrupt
@@ -43,7 +44,12 @@ public:
 	* which should be in the format produced by Linker::link().
 	* The PC register is always initialized to 0x40000000.
 	*/
-	Emulator(std::istream& initData);
+	Emulator(std::ifstream* initData);
+	/*
+	* An emulator constructed with this constructer redirects its output
+	* to the output string. This is useful for testing purposes.
+	*/
+	Emulator(std::ifstream* initData, std::string* output);
 	
 	void emulate();
 };

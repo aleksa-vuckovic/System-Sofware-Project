@@ -1,8 +1,8 @@
 #include "Memory.h"
 #include <iostream>
-#define TERM_OUT 0xFFFFFF00
-#define TERM_IN 0xFFFFFF04
-#define TIME_CONFIG 0xFFFFFF10
+#define TERM_OUT 0xFFFFFF00u
+#define TERM_IN 0xFFFFFF04u
+#define TIME_CONFIG 0xFFFFFF10u
 Memory::Memory() {
 }
 Memory::~Memory() {
@@ -14,7 +14,7 @@ unsigned char Memory::getByte(unsigned addr) {
 	unsigned char ret;
 	if (data.find(addr / segSize) == data.end()) ret = 0;
 	else ret = data[addr / segSize][addr % segSize];
-	//if (addr == 0x40000068) std::cout << (int)ret << " read from 0x40000068" << std::endl;
+	//if (addr == 0x400000EC) std::cout << (int)ret << " read from 0x400000EC" << std::endl;
 	return ret;
 }
 unsigned Memory::getInt(unsigned addr) {
@@ -27,7 +27,7 @@ void Memory::writeByte(unsigned addr, unsigned char byte) {
 		data[addr / segSize] = arr;
 	}
 	data[addr / segSize][addr % segSize] = byte;
-	//if (addr == 0x40000068) std::cout << (int)byte << " written to 0x40000068" << std::endl;
+	//if (addr == 0x400000EC) std::cout << (int)byte << " written to 0x400000EC" << std::endl;
 }
 void Memory::writeInt(unsigned addr, unsigned int num) {
 	writeByte(addr, num % 256); num >>= 8;

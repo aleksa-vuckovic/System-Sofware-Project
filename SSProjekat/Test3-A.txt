@@ -1,0 +1,24 @@
+.global disableInterrupts
+.global enableInterrupts
+.section .text
+disableInterrupts:
+push %r1
+push %r2
+csrrd %status, %r1
+ld $6, %r2
+or %r2, %r1
+csrwr %r1, %status
+pop %r2
+pop %r1
+ret
+
+enableInterrupts:
+push %r1
+push %r2
+csrrd %status, %r1
+ld $0xFFFFFFFB, %r2
+and %r2, %r1
+csrwr %r1, %status
+pop %r2
+pop %r1
+ret

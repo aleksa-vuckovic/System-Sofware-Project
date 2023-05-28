@@ -4,7 +4,7 @@
 std::string InstructionTranslator::mnemonics[] = {
 		"halt", "int", "iret", "call", "ret", "jmp", "beq", "bne",
 		"bgt", "push", "pop", "xchg", "add", "sub", "mul", "div",
-		"not", "and", "or", "xor", "shl", "shr", "ld", "st"
+		"not", "and", "or", "xor", "shl", "shr", "ld", "st", "csrrd", "csrwr"
 };
 void InstructionTranslator::checkMnemonic(Instruction* ins) {
 	bool ok = false;
@@ -91,8 +91,7 @@ int InstructionTranslator::getSize(Instruction* ins) {
 	if (m == "ld") {
 		Operand* op = ins->getOperand(0);
 		Operand::Type t = op->getType();
-		if (t == Operand::MEM_LIT || t == Operand::MEM_SYM
-			|| t == Operand::REG_IND) return 8;
+		if (t == Operand::MEM_LIT || t == Operand::MEM_SYM || t == Operand::REG_LIT || t == Operand::REG_SYM) return 8;
 		else return 4;
 	}
 	if (m == "st") {
@@ -194,7 +193,11 @@ std::string InstructionTranslator::translate(Instruction* ins, int* litoffset, i
 		}
 		if (t == Operand::REG_DIR) {
 			char regB = Converter::hexChar(op->getRegister());
-			return std::string("01") + regA + regB + "0000";
+			return std::string("91") + regA + regB + "0000";
+		}
+		else if (t == Operand::REG_IND) {
+			char regB = Converter::hexChar(op->getRegister());
+			return std::string("92") + regA + regB + "0000";
 		}
 		else {
 			*litoffset = 2;
@@ -225,9 +228,9 @@ std::string InstructionTranslator::translate(Instruction* ins, int* litoffset, i
 		}
 	}
 	else {
-		char regA = ins->getOperand(0)->getRegister();
-		char regB = ins->getOperand(1)->getRegister();
-		return std::string(m == "csrrd" ? "90" : "91") + regB + regA + "0000";
+		char regA = Converter::hexChar(ins->getOperand(0)->getRegister());
+		char regB = Converter::hexChar(ins->getOperand(1)->getRegister());
+		return std::string(m == "csrrd" ? "90" : "94") + regB + regA + "0000";
 	}
 }
 

@@ -1,0 +1,12 @@
+.extern interruptRoutine
+.extern enableInterrupts
+.extern disableInterrupts
+.section .main
+ld $100, %sp
+ld $interruptRoutine, %r1
+csrwr %r1, %handler
+call disableInterrupts
+int
+call enableInterrupts
+int
+halt

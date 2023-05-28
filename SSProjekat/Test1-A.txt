@@ -1,0 +1,12 @@
+.extern f
+.global var
+
+.section .text
+ld $0x100, %sp
+call f
+ld var, %r1
+st %r1, 0xFFFFFF00
+halt
+
+.section .data
+var: .word 1

@@ -1,0 +1,20 @@
+.global printarr
+.extern arr
+.extern len
+.section .text
+
+printarr:
+ld len, %r1
+ld $4, %r10
+mul %r10, %r1
+ld $0, %r2
+
+loop:
+beq %r1, %r2, end
+ld [%r2 + arr], %r3
+st %r3, 0xFFFFFF00
+add %r10, %r2
+jmp loop
+
+end:
+ret

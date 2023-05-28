@@ -1,5 +1,4 @@
-﻿  Linker.cpp
-D:\6\SS\SSProjekat\SSProjekat\SectionHeaderTable.h(56,1): warning C4267: 'return': conversion from 'size_t' to 'int', possible loss of data
+﻿  Main.cpp
 D:\6\SS\SSProjekat\SSProjekat\Operand.h(94,1): warning C4250: 'LiteralRegisterOperand': inherits 'LiteralOperand::LiteralOperand::getLiteral' via dominance
 D:\6\SS\SSProjekat\SSProjekat\Operand.h(35,12): message : see declaration of 'LiteralOperand::getLiteral'
 D:\6\SS\SSProjekat\SSProjekat\Operand.h(94,1): warning C4250: 'LiteralRegisterOperand': inherits 'RegisterOperand::RegisterOperand::getRegister' via dominance
@@ -12,8 +11,5 @@ D:\6\SS\SSProjekat\SSProjekat\Operand.h(100,1): warning C4250: 'SymbolRegisterOp
 D:\6\SS\SSProjekat\SSProjekat\Operand.h(75,6): message : see declaration of 'RegisterOperand::getRegister'
 D:\6\SS\SSProjekat\SSProjekat\Operand.h(100,1): warning C4250: 'SymbolRegisterOperand': inherits 'SymbolOperand::SymbolOperand::hasSymbol' via dominance
 D:\6\SS\SSProjekat\SSProjekat\Operand.h(58,7): message : see declaration of 'SymbolOperand::hasSymbol'
-D:\6\SS\SSProjekat\SSProjekat\Linker.cpp(100,52): warning C4267: '+=': conversion from 'size_t' to 'int', possible loss of data
-D:\6\SS\SSProjekat\SSProjekat\Linker.cpp(107,25): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
-D:\6\SS\SSProjekat\SSProjekat\Linker.cpp(138,46): warning C4267: '+=': conversion from 'size_t' to 'int', possible loss of data
-D:\6\SS\SSProjekat\SSProjekat\Linker.cpp(209,29): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+D:\6\SS\SSProjekat\SSProjekat\Main.cpp(4,10): warning C4067: unexpected tokens following preprocessor directive - expected a newline
   SSProjekat.vcxproj -> D:\6\SS\SSProjekat\x64\Debug\SSProjekat.exe

@@ -119,5 +119,39 @@
     <ClInclude Include="InstructionCode.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="Test2-A.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
+    <Text Include="Test2-B.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
+    <Text Include="Test2-C.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
+    <Text Include="Test1-A.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
+    <Text Include="Test1-B.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
+    <Text Include="Test3-A.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
+    <Text Include="Test3-B.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
+    <Text Include="Test3-C.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="SSProjekat.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
   </ItemGroup>
 </Project>

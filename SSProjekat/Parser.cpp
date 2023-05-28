@@ -7,7 +7,7 @@
 #include <iostream>
 
 Parser::Parser() : directivePattern(R"del(^\s*(?:(\w+):)?\s*\.(\w+)\s*(.*)$)del"),
-		instructionPattern(R"del(^\s*(?:(\w+):)?\s*(\w{2,4})\s*(.*)$)del"),
+		instructionPattern(R"del(^\s*(?:(\w+):)?\s*(\w{2,6})\s*(.*)$)del"),
 		labelOnlyPattern(R"del(^\s*(\w+):\s*$)del"),
 		commaSeparatorPattern(R"del(^([^,]*)(,.*)?$)del"),
 		IMM_LITPattern(R"del(^\s*\$([+-]?[0-9]\w*)\s*$)del"),

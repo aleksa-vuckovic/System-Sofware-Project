@@ -1,0 +1,30 @@
+.global arr
+.global insertionSortIteration
+.global len
+.section .text
+
+insertionSortIteration:
+ld $4, %r10
+mul %r10, %r2
+add %r1, %r2
+ld %r2, %r3
+sub %r10, %r3
+
+loop:
+beq %r2, %r1, end
+ld [%r2], %r4
+ld [%r3], %r5
+bgt %r4, %r5, end
+st %r4, [%r3]
+st %r5, [%r2]
+sub %r10, %r2
+sub %r10, %r3
+jmp loop
+
+end:
+ret
+
+
+.section .data
+arr: .word 110, 109, 108, 107, 106, 105, 104, 103, 102, 101, 100, 98, 97, 99
+len: .word 14

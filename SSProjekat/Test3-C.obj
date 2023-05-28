@@ -1,0 +1,18 @@
+FILE HEADER
+3
+SECTION HEADER TABLE
+SYMTAB,S,6,5
+.main,L,11,3
+.rela.main,R,14,4
+SYMTAB
+0,S,L,.main,.main
+0,U,G,*UND*,disableInterrupts
+0,U,G,*UND*,enableInterrupts
+0,U,G,*UND*,interruptRoutine
+.main
+92EF001C921F001C9411000020F0000010000000
+20F0000010000000000000006400000000000000
+.rela.main
+14,REL_PC12,disableInterrupts,-2
+22,REL_PC12,enableInterrupts,-2
+36,REL_32,interruptRoutine,0

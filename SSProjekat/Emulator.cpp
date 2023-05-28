@@ -1,6 +1,6 @@
 #include "Emulator.h"
 #include <regex>
-
+#include <fstream>
 
 int Emulator::execute(InstructionCode ic) {
 	int oc = ic.getOC();
@@ -121,11 +121,11 @@ int Emulator::execute(InstructionCode ic) {
 	}
 	return ret;
 }
-Emulator::Emulator(std::istream& initData) {
+Emulator::Emulator(std::ifstream* initData) {
 	std::string line;
-	while (std::getline(initData, line)) {
+	while (std::getline(*initData, line)) {
 		if (line == "") continue;
-		std::regex pattern(R"del(^(\d+): ((?:\w\w)|  ) ((?:\w\w)|  ) ((?:\w\w)|  ) ((?:\w\w)|  ) ((?:\w\w)|  ) ((?:\w\w)|  ) ((?:\w\w)|  ) ((?:\w\w)|  )$)del");
+		std::regex pattern(R"del(^(\w+): ((?:\w\w)|  ) ((?:\w\w)|  ) ((?:\w\w)|  ) ((?:\w\w)|  ) ((?:\w\w)|  ) ((?:\w\w)|  ) ((?:\w\w)|  ) ((?:\w\w)|  )$)del");
 		std::sregex_iterator iter = std::sregex_iterator(line.begin(), line.end(), pattern);
 		std::sregex_iterator end;
 		if (iter != end) {
@@ -139,6 +139,9 @@ Emulator::Emulator(std::istream& initData) {
 	}
 	regs.setPC(0x40000000);
 }
+Emulator::Emulator(std::ifstream* initData, std::string* output) : Emulator(initData) {
+	this->output = output;
+}
 void Emulator::emulate() {
 	int instructionsSinceLastTimeInterrupt = 0;
 	int instructionsSinceLastTerminalInterrupt = 0;
@@ -147,7 +150,7 @@ void Emulator::emulate() {
 		//Read next instruction.
 		int pc = regs.getPC(); regs.setPC(pc + 4);
 		InstructionCode ins = InstructionCode(mem.getInt(pc));
-		//printf("Read instruction %x from address %x.", ins.getOC(), regs.getPC());
+		//printf("Read instruction %x from address %x.\n", ins.getOC(), regs.getPC());
 		//Execute instruction.
 		int cause = execute(ins);
 		instructionsSinceLastTerminalInterrupt++;
@@ -170,6 +173,7 @@ void Emulator::emulate() {
 			}
 		}
 		if (cause != -1 && !regs.getI()) {
+			if (cause == 1) std::cout << ("Incorrect instruction code\n");
 			int sp = regs.getSP();
 			sp -= 4;
 			mem.writeInt(sp, regs.getStatus());
@@ -201,6 +205,8 @@ char Emulator::getChar() {
 	return 0;
 }
 void Emulator::putChar() {
-	std::cout << std::endl << "Char printed: " << (char)mem.getTermOut() << std::endl;
+	char c = (char)mem.getTermOut();
+	if (output) *output += c;
+	else std::cout << c;
 	return;
 }

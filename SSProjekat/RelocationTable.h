@@ -52,7 +52,7 @@ public:
 	* Applies all of the relocations to the data passed as the first argument, using the symbol table passed as the second argument.
 	* The baseAddr is the base address of the section, which is necessary for PC relative relocations.
 	*/
-	std::string apply(std::string, int baseAddr, SymbolTable*);
+	std::string apply(std::string, int baseAddr, SymbolTable*, std::unordered_map<std::string, int>* localSegmentLocs);
 	/*
 	* Merges the relocation table passed as the first argument.
 	* baseAddr is the base address of the section that the relTable originally referenced,

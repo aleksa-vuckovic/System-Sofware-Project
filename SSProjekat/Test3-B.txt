@@ -1,0 +1,18 @@
+.global interruptRoutine
+.section .text
+interruptRoutine:
+push %r1
+ld $105, %r1
+st %r1, 0xFFFFFF00
+ld $110, %r1
+st %r1, 0xFFFFFF00
+ld $115, %r1
+st %r1, 0xFFFFFF00
+ld $105, %r1
+st %r1, 0xFFFFFF00
+ld $100, %r1
+st %r1, 0xFFFFFF00
+ld $101, %r1
+st %r1, 0xFFFFFF00
+pop %r1
+iret

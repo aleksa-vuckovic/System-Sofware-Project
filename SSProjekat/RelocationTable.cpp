@@ -27,7 +27,7 @@ void RelocationTable::addEntry(int offset, std::string type, std::string symbol,
 	list->push_back({ offset, type, symbol, addend });
 }
 void RelocationTable::addEntryFromFile(std::string line) {
-	std::regex pattern(R"del(^(\d+),(\w+),(\w+),([+-]?\d+))del");
+	std::regex pattern(R"del(^(\d+),(\w+),([\.\w]+),([+-]?\d+))del");
 	std::sregex_iterator iter = std::sregex_iterator(line.begin(), line.end(), pattern);
 	std::sregex_iterator end;
 	if (iter == end) throw RelocationException("RelocationTable::RelocationException: Invalid input file format (" + line + ")");
@@ -53,18 +53,24 @@ std::string RelocationTable::getName()
 int RelocationTable::getCount() {
 	return list->size();
 }
-std::string RelocationTable::apply(std::string data, int baseAddr, SymbolTable* symTab) {
+std::string RelocationTable::apply(std::string data, int baseAddr, SymbolTable* symTab, std::unordered_map<std::string, int>* localSegmentLocs) {
 	for (auto it = list->begin(); it != list->end(); it++) {
 		if (it->type == REL_PC12) {
 			int pc = baseAddr + it->offset;
 			int val = it->addend - pc;
-			if (it->symbol != "") val += symTab->getEntry(it->symbol)->value;
+			if (it->symbol != "") {
+				if (localSegmentLocs->find(it->symbol) == localSegmentLocs->end()) val += symTab->getEntry(it->symbol)->value;
+				else val += localSegmentLocs->at(it->symbol);
+			}
 			int start = it->offset * 2 + 1;
 			data.replace(start, 3, Converter::toHex(val, 3));
 		}
 		else if (it->type == REL_32) {
 			int val = it->addend;
-			if (it->symbol != "") val += symTab->getEntry(it->symbol)->value;
+			if (it->symbol != "") {
+				if (localSegmentLocs->find(it->symbol) == localSegmentLocs->end()) val += symTab->getEntry(it->symbol)->value;
+				else val += localSegmentLocs->at(it->symbol);
+			}
 			int start = it->offset * 2;
 			data.replace(start, 8, Converter::toLittleEndian(Converter::toHex32(val)));
 		}

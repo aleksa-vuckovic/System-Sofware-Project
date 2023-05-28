@@ -4,10 +4,11 @@
 #include <map>
 #include <regex>
 #include "Exception.h"
+#include <fstream>
 
 
 
-std::string Assembler::assemble(std::istream& input) {
+std::string Assembler::assemble(std::ifstream* input) {
 	std::unordered_map<std::string, Section*> sections;
 	//The parsed objects are remembered, so that the parser doesn't have to be used again
 	std::list<void*> lines;
@@ -22,7 +23,7 @@ std::string Assembler::assemble(std::istream& input) {
 	Directive* directive = nullptr;
 	Instruction* instruction = nullptr;
 	//PHASE 1
-	while (std::getline(input, line)) {
+	while (std::getline(*input, line)) {
 		std::regex pattern("^\\s*$");
 		if (std::regex_match(line, pattern)) continue; //Empty lines are allowed and ignored.
 		parser.parseAssemblerLine(line, &label, &directive, &instruction);
