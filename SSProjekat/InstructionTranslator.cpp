@@ -14,18 +14,19 @@ void InstructionTranslator::checkMnemonic(Instruction* ins) {
 	if (!ok) throw TranslationException("InstructionTranslator::TranslationException: Unrecognized mnemonic: " + ins->getMnemonic() + ".");
 }
 void InstructionTranslator::checkOpNum(Instruction* ins, int num) {
-	if (ins->getOperandCount() != num) throw TranslationException("InstructionTranslator::TranslationException: Unexpected operand count.");
+	int cnt = ins->getOperandCount();
+	if (cnt != num) throw TranslationException("InstructionTranslator::TranslationException: Unexpected operand count. Expected " + std::to_string(num) + ", got " + std::to_string(cnt) + " for instruction " + ins->getMnemonic());
 }
 void InstructionTranslator::checkOpTypeReg(Operand* op) {
 	if (op->getType() != Operand::REG_DIR) throw TranslationException("InstructionTranslator::TranslationException: Unexpected operand type - expected REG_DIR.");
 }
 void InstructionTranslator::checkOpTypeJmp(Operand* op) {
 	Operand::Type t = op->getType();
-	if (t != Operand::MEM_LIT || t != Operand::MEM_SYM) throw TranslationException("InstructionTranslator::TranslationException: Unexpected operand type for a jmp/branch instruction.");
+	if (t != Operand::MEM_LIT && t != Operand::MEM_SYM) throw TranslationException("InstructionTranslator::TranslationException: Unexpected operand type for a jmp/branch instruction.");
 }
 void InstructionTranslator::checkOpTypeSt(Operand* op) {
 	Operand::Type t = op->getType();
-	if (t == Operand::IMM_LIT || t == Operand::MEM_LIT) throw TranslationException("InstructionTranslator::TranslationException: Unexpected operand type for a store instruction.");
+	if (t == Operand::IMM_LIT || t == Operand::IMM_SYM) throw TranslationException("InstructionTranslator::TranslationException: Unexpected operand type for a store instruction - immediate operands are not allowed.");
 }
 void InstructionTranslator::checkGPR(Operand* op) {
 	if (!op->hasRegister()) return;
@@ -52,7 +53,7 @@ void InstructionTranslator::checkInstruction(Instruction* ins) {
 	std::string m = ins->getMnemonic();
 	//Operand count check
 	if (m == "halt" || m == "int" || m == "iret" || m == "ret") checkOpNum(ins, 0);
-	else if (m == "jmp" || m == "push" || m == "pop" || m == "not") checkOpNum(ins, 1);
+	else if (m == "jmp" || m == "push" || m == "pop" || m == "not" || m == "call") checkOpNum(ins, 1);
 	else if (m == "beq" || m == "bne" || m == "bgt") checkOpNum(ins, 3);
 	else checkOpNum(ins, 2);
 
@@ -86,29 +87,25 @@ void InstructionTranslator::checkInstruction(Instruction* ins) {
 }
 int InstructionTranslator::getSize(Instruction* ins) {
 	std::string m = ins->getMnemonic();
-	if (m == "iret" || m == "call") return 12;
-	if (m == "ret" || m == "push") return 8;
+	if (m == "iret") return 8;
 	if (m == "ld") {
-		Operand* op = ins->getOperand(1);
+		Operand* op = ins->getOperand(0);
 		Operand::Type t = op->getType();
 		if (t == Operand::MEM_LIT || t == Operand::MEM_SYM
-			|| t == Operand::REG_DIR || t == Operand::REG_IND) return 8;
+			|| t == Operand::REG_IND) return 8;
 		else return 4;
 	}
 	if (m == "st") {
 		Operand* op = ins->getOperand(1);
 		Operand::Type t = op->getType();
 		if (t == Operand::REG_DIR || t == Operand::REG_IND) return 4;
-		else return 20;
+		else return 16;
 	}
 	return 4;
 }
 
-std::string InstructionTranslator::addsp(int num) {
-	return "91EE0" + Converter::toHex(num, 3);
-}
 std::string InstructionTranslator::push(int reg) {
-	return std::string("91EE0FFC80E0") + Converter::hexChar(reg) + "000";
+	return std::string("81E0") + Converter::hexChar(reg) + "FFC";
 }
 std::string InstructionTranslator::pop(int reg) {
 	return std::string("93") + Converter::hexChar(reg) + "E0004";
@@ -120,14 +117,14 @@ std::string InstructionTranslator::translate(Instruction* ins, int* litoffset, i
 	if (m == "halt") return "00000000";
 	if (m == "int") return "10000000";
 	if (m == "iret") {
-		return addsp(8) + "960E0FFC92FE0FF8";
+		return "93FE0004970E0004";
 	}
 	if (m == "call") {
-		*reloffset = 10;
-		return push(15) + "30F00000";
+		*reloffset = 2;
+		return "20F00000";
 	}
 	if (m == "ret") {
-		return addsp(4) + "92FE9FFC";
+		return "93FE0004";
 	}
 	if (m == "jmp") {
 		*reloffset = 2;
@@ -193,7 +190,7 @@ std::string InstructionTranslator::translate(Instruction* ins, int* litoffset, i
 		}
 		if (t == Operand::MEM_LIT || t == Operand::MEM_SYM) {
 			*litoffset = 2;
-			return std::string("92") + regA + "F000092AA0000";
+			return std::string("92") + regA + "F000092" + regA + regA + "0000";
 		}
 		if (t == Operand::REG_DIR) {
 			char regB = Converter::hexChar(op->getRegister());
@@ -211,7 +208,7 @@ std::string InstructionTranslator::translate(Instruction* ins, int* litoffset, i
 		char regA = Converter::hexChar(ins->getOperand(0)->getRegister());
 		if (t == Operand::MEM_LIT || t == Operand::MEM_SYM) {
 			char regC = regA == '1' ? '2' : '1';
-			*litoffset = 10;
+			*litoffset = 6;
 			return push(regC - '0') + "92" + regC + "F000080" + regC + "0" + regA + "000" + pop(regC - '0');
 		}
 		char regB = Converter::hexChar(ins->getOperand(1)->getRegister());
@@ -223,7 +220,7 @@ std::string InstructionTranslator::translate(Instruction* ins, int* litoffset, i
 		}
 		else {
 			char regC = regA == '1' ? '2' : '1';
-			*litoffset = 10;
+			*litoffset = 6;
 			return push(regC - '0') + "92" + regC + "F000080" + regB + regC + regA + "000" + pop(regC - '0');
 		}
 	}
@@ -238,7 +235,7 @@ void InstructionTranslator::checkDirective(Directive* dir) {
 	std::string name = dir->getName();
 	int opCnt = dir->getOperandCount();
 	if (name == "global" || name == "extern") {
-		for (int i = 0; i < opCnt; i++) if (dir->getOperand(i)->getType() != Operand::MEM_SYM) throw TranslationException("InstructionTranslator::TranslationException: Expected symbol.");
+		for (int i = 0; i < opCnt; i++) if (dir->getOperand(i)->getType() != Operand::MEM_SYM) throw TranslationException("InstructionTranslator::TranslationException: Expected symbol for global/extern directive.");
 	}
 	else if (name == "section") {
 		if (opCnt != 1) throw TranslationException("InstructionTranslator::TranslationException: Unexpected number of arguments for section directive.");
@@ -264,7 +261,7 @@ void InstructionTranslator::checkDirective(Directive* dir) {
 }
 int InstructionTranslator::getSize(Directive* dir) {
 	std::string name = dir->getName();
-	if (name == "word") return dir->getOperandCount();
+	if (name == "word") return dir->getOperandCount() * 4;
 	else if (name == "skip") return dir->getOperand(0)->getLiteral();
 	else return 0;
 }

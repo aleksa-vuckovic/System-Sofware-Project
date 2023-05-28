@@ -79,11 +79,8 @@ int Parser::parseRegister(std::string reg) {
 	return res;
 }
 Operand* Parser::parseOperand(std::string operand) {
-	if (operand == "") return nullptr;
 	std::sregex_iterator end;
 	std::sregex_iterator iter = std::sregex_iterator(operand.begin(), operand.end(), IMM_LITPattern);
-	bool f = false;
-	if (operand == "-1") f = true;
 	if (iter != end) {
 		std::smatch match = *iter;
 		return new ImmediateLiteralOperand(parseLiteral(match[1].str()));

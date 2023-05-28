@@ -129,12 +129,15 @@
   <ItemGroup>
     <ClCompile Include="Assembler.cpp" />
     <ClCompile Include="Converter.cpp" />
+    <ClCompile Include="Emulator.cpp" />
     <ClCompile Include="Instruction.cpp" />
+    <ClCompile Include="InstructionCode.cpp" />
     <ClCompile Include="InstructionTranslator.cpp" />
     <ClCompile Include="Linker.cpp" />
     <ClCompile Include="Main.cpp" />
-    <ClCompile Include="Operand.cpp" />
+    <ClCompile Include="Memory.cpp" />
     <ClCompile Include="Parser.cpp" />
+    <ClCompile Include="Registers.cpp" />
     <ClCompile Include="Test.cpp" />
     <ClCompile Include="Pool.cpp" />
     <ClCompile Include="RelocationTable.cpp" />
@@ -146,10 +149,12 @@
     <ClInclude Include="Converter.h" />
     <ClInclude Include="Emulator.h" />
     <ClInclude Include="Exception.h" />
+    <ClInclude Include="InstructionCode.h" />
     <ClInclude Include="InstructionTranslator.h" />
     <ClInclude Include="Linker.h" />
     <ClInclude Include="Memory.h" />
     <ClInclude Include="Pool.h" />
+    <ClInclude Include="Registers.h" />
     <ClInclude Include="RelocationTable.h" />
     <ClInclude Include="Section.h" />
     <ClInclude Include="SectionHeaderTable.h" />

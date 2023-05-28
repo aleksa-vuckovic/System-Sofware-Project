@@ -3,6 +3,13 @@
 #include <unordered_map>
 #include <string>
 #include "RelocationTable.h"
+
+/*
+* Represents a pool of literals and symbol addreses used in a code section.
+* The pool saves the location of each literal/symbol relative to the start of the pool.
+* The base address of the pool can also be set.
+* The addRelocations() method adds absolute relocations for all of the symbols contained in the pool.
+*/
 class Pool {
 	std::string data;
 	int size, base;
@@ -20,8 +27,8 @@ public:
 	void setBase(int val);
 	int getBase();
 	int getSize();
+	void addRelocations(SymbolTable* symTab, RelocationTable* relTable);
 	std::string getData();
-	std::unordered_map<std::string, int>* getSymMap();
 };
 
 #endif

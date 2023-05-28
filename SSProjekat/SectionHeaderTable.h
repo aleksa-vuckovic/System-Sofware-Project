@@ -45,10 +45,10 @@ public:
 		return result;
 	}
 	Entry getEntryFromFile(std::string line) {
-		std::regex pattern(R"del(^(\w+),\w,(\d+),(\d+)\s*$)del");
+		std::regex pattern(R"del(^([\.\w]+),(\w),(\d+),(\d+)\s*$)del");
 		std::sregex_iterator iter = std::sregex_iterator(line.begin(), line.end(), pattern);
 		std::sregex_iterator end;
-		if (iter == end) throw Exception("SectionHeaderTable: Invalid input file content.");
+		if (iter == end) throw Exception("SectionHeaderTable: Invalid input file content (" + line + ")");
 		std::smatch match = *iter;
 		return Entry(match[1].str(), match[2].str().at(0), std::stoi(match[3].str()), std::stoi(match[4].str()));
 	}

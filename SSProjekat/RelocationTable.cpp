@@ -16,8 +16,9 @@ RelocationTable::Entry::Entry(int offset, std::string type, std::string symbol, 
 std::string RelocationTable::Entry::str() {
 	return std::to_string(offset) + "," + type + "," + symbol + "," + std::to_string(addend);
 }
-RelocationTable::RelocationTable() {
+RelocationTable::RelocationTable(std::string name) {
 	list = new std::list<Entry>();
+	this->name = name;
 }
 RelocationTable::~RelocationTable() {
 	delete list; list = nullptr;
@@ -26,10 +27,10 @@ void RelocationTable::addEntry(int offset, std::string type, std::string symbol,
 	list->push_back({ offset, type, symbol, addend });
 }
 void RelocationTable::addEntryFromFile(std::string line) {
-	std::regex pattern(R"del(^(\d+),(\w+),(\w+),(\w+))del");
+	std::regex pattern(R"del(^(\d+),(\w+),(\w+),([+-]?\d+))del");
 	std::sregex_iterator iter = std::sregex_iterator(line.begin(), line.end(), pattern);
 	std::sregex_iterator end;
-	if (iter == end) throw RelocationException("RelocationTable::RelocationException: Invalid input file format.");
+	if (iter == end) throw RelocationException("RelocationTable::RelocationException: Invalid input file format (" + line + ")");
 	std::smatch match = *iter;
 	addEntry(std::stoi(match[1].str()), match[2].str(), match[3].str(), std::stoi(match[4].str()));
 }
@@ -38,12 +39,16 @@ std::list<RelocationTable::Entry>* RelocationTable::getEntries() {
 }
 
 std::string RelocationTable::str() {
-	std::string res = "";
+	std::string res = name + "\n";
 	for (auto it = list->begin(); it != list->end(); it++) {
 		res += it->str();
 		res += "\n";
 	}
 	return res;
+}
+std::string RelocationTable::getName()
+{
+	return name;
 }
 int RelocationTable::getCount() {
 	return list->size();
@@ -61,9 +66,10 @@ std::string RelocationTable::apply(std::string data, int baseAddr, SymbolTable* 
 			int val = it->addend;
 			if (it->symbol != "") val += symTab->getEntry(it->symbol)->value;
 			int start = it->offset * 2;
-			data.replace(start, 8, Converter::toHex32(val));
+			data.replace(start, 8, Converter::toLittleEndian(Converter::toHex32(val)));
 		}
 	}
+	return data;
 }
 void RelocationTable::merge(RelocationTable* relTable, int baseAddr, std::unordered_map<std::string, int>* localSegmentLocs) {
 	for (auto it = relTable->list->begin(); it != relTable->list->end(); it++) {

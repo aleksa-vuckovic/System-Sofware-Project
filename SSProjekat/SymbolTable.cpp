@@ -29,17 +29,17 @@ SymbolTable::Entry* SymbolTable::getEntry(std::string name) {
 void SymbolTable::setGlobal(std::string name) {
 	if (table->find(name) != table->end()) {
 		Entry* e = table->at(name);
-		e->type = 'G';
+		e->bind = 'G';
 	}
 	else globals->insert(name);
 }
 
 void SymbolTable::addEntryFromFile(std::string line) {
 	//value,type,bind,section,name
-	std::regex pattern(R"del(^(\d+),(\w),(\w),(\w+),(\w+)$)del");
+	std::regex pattern(R"del(^(\d+),(\w),(\w),(\.?[*\w]+),(\.?\w+)$)del");
 	std::sregex_iterator iter = std::sregex_iterator(line.begin(), line.end(), pattern);
 	std::sregex_iterator end;
-	if (iter == end) throw SymbolException("Incorrect format for symbol table entry.");
+	if (iter == end) throw SymbolException("SymbolTable::SymbolException: Incorrect format for symbol table entry (" + line + ")");
 	std::smatch match = *iter;
 	int val = stoi(match[1].str());
 	char type = match[2].str()[0];

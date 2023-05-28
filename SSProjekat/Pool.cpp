@@ -9,7 +9,7 @@ Pool::Pool() {
 void Pool::addLiteral(long long lit) {
 	if (litMap->find(lit) != litMap->end()) return;
 	litMap->insert({ lit, size });
-	data += Converter::toHex(lit, 8);
+	data += Converter::toLittleEndian(Converter::toHex(lit, 8));
 	size += 4;
 }
 void Pool::addSymbol(std::string sym) {
@@ -43,11 +43,17 @@ Pool::~Pool() {
 	delete symMap; symMap = nullptr;
 	delete litMap; litMap = nullptr;
 }
-
+void Pool::addRelocations(SymbolTable* symTab, RelocationTable* relTable) {
+	for (const auto& pair : *symMap) {
+		std::string sym = pair.first;
+		int pos = pair.second;
+		if (!symTab->contains(sym)) throw Exception("Exception: Undefined symbol " + sym + " used in an instruction.");
+		SymbolTable::Entry* entry = symTab->getEntry(sym);
+		if (entry->bind == 'L') relTable->addEntry(base + pos, REL_32, entry->section, entry->value);
+		else relTable->addEntry(base + pos, REL_32, sym, 0);
+	}
+}
 std::string Pool::getData()
 {
 	return data;
-}
-std::unordered_map<std::string, int>* Pool::getSymMap() {
-	return symMap;
 }

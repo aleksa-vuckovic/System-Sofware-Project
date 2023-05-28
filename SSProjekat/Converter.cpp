@@ -27,6 +27,15 @@ std::string Converter::toLower(std::string s) {
 bool Converter::isBlank(char c) {
 	return c == ' ' || c == '\t' || c == '\n';
 }
+std::string Converter::toLittleEndian(std::string val)
+{
+	if (val.length() % 2) val = "0" + val;
+	std::string res = "";
+	for (int i = 0; i < val.length(); i+=2) {
+		res = val.substr(i, 2) + res;
+	}
+	return res;
+}
 std::string Converter::removeBlanks(std::string s) {
 	std::string res = "";
 	for (int i = 0; i < s.length(); i++) if (!isBlank(s[i])) res += s[i];

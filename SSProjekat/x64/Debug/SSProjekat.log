@@ -1,15 +1,19 @@
-﻿  Assembler.cpp
-D:\6\SS\SSProjekat\SSProjekat\Operand.h(82,1): warning C4250: 'LiteralRegisterOperand': inherits 'LiteralOperand::LiteralOperand::getLiteral' via dominance
-D:\6\SS\SSProjekat\SSProjekat\Operand.h(25,12): message : see declaration of 'LiteralOperand::getLiteral'
-D:\6\SS\SSProjekat\SSProjekat\Operand.h(82,1): warning C4250: 'LiteralRegisterOperand': inherits 'RegisterOperand::RegisterOperand::getRegister' via dominance
-D:\6\SS\SSProjekat\SSProjekat\Operand.h(63,6): message : see declaration of 'RegisterOperand::getRegister'
-D:\6\SS\SSProjekat\SSProjekat\Operand.h(82,1): warning C4250: 'LiteralRegisterOperand': inherits 'LiteralOperand::LiteralOperand::hasLiteral' via dominance
-D:\6\SS\SSProjekat\SSProjekat\Operand.h(26,7): message : see declaration of 'LiteralOperand::hasLiteral'
-D:\6\SS\SSProjekat\SSProjekat\Operand.h(88,1): warning C4250: 'SymbolRegisterOperand': inherits 'SymbolOperand::SymbolOperand::getSymbol' via dominance
-D:\6\SS\SSProjekat\SSProjekat\Operand.h(44,14): message : see declaration of 'SymbolOperand::getSymbol'
-D:\6\SS\SSProjekat\SSProjekat\Operand.h(88,1): warning C4250: 'SymbolRegisterOperand': inherits 'RegisterOperand::RegisterOperand::getRegister' via dominance
-D:\6\SS\SSProjekat\SSProjekat\Operand.h(63,6): message : see declaration of 'RegisterOperand::getRegister'
-D:\6\SS\SSProjekat\SSProjekat\Operand.h(88,1): warning C4250: 'SymbolRegisterOperand': inherits 'SymbolOperand::SymbolOperand::hasSymbol' via dominance
-D:\6\SS\SSProjekat\SSProjekat\Operand.h(46,7): message : see declaration of 'SymbolOperand::hasSymbol'
-D:\6\SS\SSProjekat\SSProjekat\Assembler.cpp(97,45): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+﻿  Linker.cpp
+D:\6\SS\SSProjekat\SSProjekat\SectionHeaderTable.h(56,1): warning C4267: 'return': conversion from 'size_t' to 'int', possible loss of data
+D:\6\SS\SSProjekat\SSProjekat\Operand.h(94,1): warning C4250: 'LiteralRegisterOperand': inherits 'LiteralOperand::LiteralOperand::getLiteral' via dominance
+D:\6\SS\SSProjekat\SSProjekat\Operand.h(35,12): message : see declaration of 'LiteralOperand::getLiteral'
+D:\6\SS\SSProjekat\SSProjekat\Operand.h(94,1): warning C4250: 'LiteralRegisterOperand': inherits 'RegisterOperand::RegisterOperand::getRegister' via dominance
+D:\6\SS\SSProjekat\SSProjekat\Operand.h(75,6): message : see declaration of 'RegisterOperand::getRegister'
+D:\6\SS\SSProjekat\SSProjekat\Operand.h(94,1): warning C4250: 'LiteralRegisterOperand': inherits 'LiteralOperand::LiteralOperand::hasLiteral' via dominance
+D:\6\SS\SSProjekat\SSProjekat\Operand.h(36,7): message : see declaration of 'LiteralOperand::hasLiteral'
+D:\6\SS\SSProjekat\SSProjekat\Operand.h(100,1): warning C4250: 'SymbolRegisterOperand': inherits 'SymbolOperand::SymbolOperand::getSymbol' via dominance
+D:\6\SS\SSProjekat\SSProjekat\Operand.h(56,14): message : see declaration of 'SymbolOperand::getSymbol'
+D:\6\SS\SSProjekat\SSProjekat\Operand.h(100,1): warning C4250: 'SymbolRegisterOperand': inherits 'RegisterOperand::RegisterOperand::getRegister' via dominance
+D:\6\SS\SSProjekat\SSProjekat\Operand.h(75,6): message : see declaration of 'RegisterOperand::getRegister'
+D:\6\SS\SSProjekat\SSProjekat\Operand.h(100,1): warning C4250: 'SymbolRegisterOperand': inherits 'SymbolOperand::SymbolOperand::hasSymbol' via dominance
+D:\6\SS\SSProjekat\SSProjekat\Operand.h(58,7): message : see declaration of 'SymbolOperand::hasSymbol'
+D:\6\SS\SSProjekat\SSProjekat\Linker.cpp(100,52): warning C4267: '+=': conversion from 'size_t' to 'int', possible loss of data
+D:\6\SS\SSProjekat\SSProjekat\Linker.cpp(107,25): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+D:\6\SS\SSProjekat\SSProjekat\Linker.cpp(138,46): warning C4267: '+=': conversion from 'size_t' to 'int', possible loss of data
+D:\6\SS\SSProjekat\SSProjekat\Linker.cpp(209,29): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
   SSProjekat.vcxproj -> D:\6\SS\SSProjekat\x64\Debug\SSProjekat.exe
