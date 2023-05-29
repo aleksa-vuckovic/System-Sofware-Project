@@ -6,18 +6,80 @@
 #include "Converter.h"
 #include <iostream>
 
+
+std::string Parser::removeComment(std::string line) {
+	std::regex pattern(R"del(([^#]*)(#.*)?)del");
+	std::sregex_iterator iter = std::sregex_iterator(line.begin(), line.end(), pattern);
+	std::sregex_iterator end;
+	if (iter != end) {
+		std::smatch match = *iter;
+		return match[1].str();
+	}
+	return "";
+}
+bool Parser::emptyLine(std::string line) {
+	std::regex pattern("^\\s*$");
+	if (std::regex_match(line, pattern)) return true;
+	else return false;
+}
+std::string Parser::unescape(std::string data) {
+	std::string unescapedStr = "";
+	bool escapeMode = false;
+	for (char c : data) {
+		if (escapeMode) {
+			switch (c) {
+			case 'n':
+				unescapedStr += '\n';  // convert "\n" to newline character
+				break;
+			case 't':
+				unescapedStr += '\t';  // convert "\t" to tab character
+				break;
+			case '\\':
+				unescapedStr += '\\';
+				break;
+			case '0':
+				unescapedStr += '\0';
+				break;
+			default:
+				throw ParserException("Parser::ParserException: Unknown escape sequence.");
+				break;
+			}
+			escapeMode = false;
+		}
+		else {
+			if (c == '\\') {
+				escapeMode = true;
+			}
+			else {
+				unescapedStr += c;
+			}
+		}
+	}
+	return unescapedStr;
+}
+std::string Parser::parseAsciiString(std::string operand) {
+	std::regex pattern(R"del([^"]*"([^"]*)".*)del");
+	std::sregex_iterator iter = std::sregex_iterator(operand.begin(), operand.end(), pattern);
+	std::sregex_iterator end;
+	if (iter != end) {
+		std::smatch match = *iter;
+		return unescape(match[1].str());
+	}
+	return "";
+}
+
 Parser::Parser() : directivePattern(R"del(^\s*(?:(\w+):)?\s*\.(\w+)\s*(.*)$)del"),
 		instructionPattern(R"del(^\s*(?:(\w+):)?\s*(\w{2,6})\s*(.*)$)del"),
 		labelOnlyPattern(R"del(^\s*(\w+):\s*$)del"),
 		commaSeparatorPattern(R"del(^([^,]*)(,.*)?$)del"),
 		IMM_LITPattern(R"del(^\s*\$([+-]?[0-9]\w*)\s*$)del"),
-		IMM_SYMPattern(R"del(^\s*\$([a-zA-Z.]\w*)\s*$)del"),
+		IMM_SYMPattern(R"del(^\s*\$([a-zA-Z\.]\w*)\s*$)del"),
 		MEM_LITPattern(R"del(^\s*([+-]?[0-9]\w*)\s*$)del"),
-		MEM_SYMPattern(R"del(^\s*([a-zA-Z.]\w*)\s*$)del"),
+		MEM_SYMPattern(R"del(^\s*([a-zA-Z\.]\w*)\s*$)del"),
 		REG_DIRPattern(R"del(^\s*%(\w+)\s*$)del"),
 		REG_INDPattern(R"del(^\s*\[\s*%(\w+)\s*\]\s*$)del"),
 		REG_LITPattern(R"del(^\s*\[\s*%([a-zA-Z0-9]+)\s*([+-]\s*[0-9]\w*)\s*\]\s*$)del"),
-		REG_SYMPattern(R"del(^\s*\[\s*%([a-zA-Z0-9]+)\s*\+\s*([a-zA-Z.]\w*)\s*\]\s*$)del"),
+		REG_SYMPattern(R"del(^\s*\[\s*%([a-zA-Z0-9]+)\s*\+\s*([a-zA-Z\.]\w*)\s*\]\s*$)del"),
 		HEX_LITPattern(R"del(^[+-]?0x[0-9a-f]+$)del") {}
 std::string Parser::getNextCSV(std::string& input) {
 	std::sregex_iterator iter = std::sregex_iterator(input.begin(), input.end(), commaSeparatorPattern);
@@ -126,7 +188,8 @@ Operand* Parser::parseOperand(std::string operand) {
 		std::string sym = match[2].str();
 		return new SymbolRegisterOperand(sym, reg);
 	}
-	throw OperandException("Parser::OperandException: Invalid operand expression: " + operand);
+	return new SpecialOperand(operand);
+	//throw OperandException("Parser::OperandException: Invalid operand expression: " + operand);
 }
 void Parser::parseAssemblerLine(std::string line, std::string* label, Directive** dirp, Instruction** insp) {
 	std::sregex_iterator iter(line.begin(), line.end(), directivePattern);
@@ -148,7 +211,6 @@ void Parser::parseAssemblerLine(std::string line, std::string* label, Directive*
 		*label = match[1].str();
 		std::string name = match[2].str();
 		std::string operandList = match[3].str();
-
 		std::vector<Operand*>* operands = getOperands(operandList);
 		*dirp = new Directive(name, operands);
 		*insp = nullptr;

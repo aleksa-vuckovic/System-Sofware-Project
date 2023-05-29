@@ -4,15 +4,18 @@
 
 class Tests {
 	
-	std::string testSystem(std::string files[], int cnt, std::unordered_map<std::string, int>* locs);
+	void testSystem(std::string files[], int cnt, std::unordered_map<std::string, int>* locs, std::string correctEmulatorOutput);
 public:
 	void testConverter();
 	void testMemory();
 	void testParser();
+	void testEquDirective();
 
 
 	void testSystem1();
 	void testSystem2();
 	void testSystem3();
+	void testSystem4();
+	void testSystem5();
 };
 #endif

@@ -87,7 +87,7 @@ void SymbolTable::mergeEntries(SymbolTable* symTab, std::unordered_map<std::stri
 			if (isDefined(entry->name)) throw SymbolException("SymbolTable::SymbolException: Double definition of symbol " + entry->name + ".");
 			if (isUndefined(entry->name)) remove(entry->name);
 			
-			Entry* e = new Entry(sectionLocs->at(entry->section) + entry->value, entry->type, 'G', entry->section, entry->name);
+			Entry* e = new Entry((entry->section == "*ABS*" ? 0 : sectionLocs->at(entry->section)) + entry->value, entry->type, 'G', entry->section, entry->name);
 			table->insert({ entry->name, e });
 		}
 	}

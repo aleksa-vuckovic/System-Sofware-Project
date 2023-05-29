@@ -1,0 +1,19 @@
+FILE HEADER
+3
+SECTION HEADER TABLE
+SYMTAB,S,6,8
+.data,L,14,4
+.rela.data,R,18,1
+SYMTAB
+0,S,L,.data,.data
+2,O,G,*ABS*,a
+44,O,L,.data,arrend
+0,O,G,.data,arrstart
+0,O,L,.data,arrstartLabel
+44,O,G,*ABS*,b
+36,O,G,*ABS*,c
+.data
+68000000650000006C0000006C0000006F000000
+2000000068000000650000006C0000006C000000
+6F000000
+.rela.data

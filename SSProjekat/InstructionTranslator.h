@@ -20,17 +20,19 @@ class InstructionTranslator {
 	public:
 		TranslationException(std::string msg) : Exception(msg) {}
 	};
-	//Allowed mnemonics, in lowercase
+	//Allowed mnemonics, in lowercase.
 	static std::string mnemonics[];
 	void checkMnemonic(Instruction* ins);
-	//Checks if the number of operands is correct for the mnemonic
+	//Checks if the number of operands is correct for the mnemonic.
 	void checkOpNum(Instruction* ins, int num);
-	//Checks if the operand is of type REG_DIR
+	//Checks if the operand is of type REG_DIR.
 	void checkOpTypeReg(Operand* op);
-	//Checks if the operand is of type MEM_LIT, or MEM_SYM (the allowed types for jmp and branch instructions)
+	//Checks if the operand is of type MEM_LIT, or MEM_SYM (the allowed types for jmp and branch instructions).
 	void checkOpTypeJmp(Operand* op);
-	//Checks the operand type for store instruction (IMM_LIT and IMM_SYM are not allowed)
+	//Checks the operand type for store instruction (IMM_LIT, IMM_SYM and SPEC are not allowed).
 	void checkOpTypeSt(Operand* op);
+	//Checks the operand type for ld instruction (SPEC is not allowed).
+	void checkOpTypeLd(Operand* op);
 	//Checks if the register number is a valid GPR register, if the operand has a register number.
 	void checkGPR(Operand* op);
 	//Checks if the register number is a valid CSR register, if the operand has a register number.

@@ -5,6 +5,8 @@
 #include <regex>
 #include "Exception.h"
 #include <fstream>
+#include "EquDirective.h"
+#include <vector>
 
 
 
@@ -15,6 +17,8 @@ std::string Assembler::assemble(std::ifstream* input) {
 	std::list<char> lineTypes;
 	SymbolTable* symTable = new SymbolTable();
 	Section* curSection = nullptr;
+	InstructionTranslator translator;
+	std::vector<EquDirective*> equs;
 
 	Parser parser;
 
@@ -24,8 +28,8 @@ std::string Assembler::assemble(std::ifstream* input) {
 	Instruction* instruction = nullptr;
 	//PHASE 1
 	while (std::getline(*input, line)) {
-		std::regex pattern("^\\s*$");
-		if (std::regex_match(line, pattern)) continue; //Empty lines are allowed and ignored.
+		line = parser.removeComment(line);
+		if (parser.emptyLine(line)) continue; //Empty lines are allowed and ignored.
 		parser.parseAssemblerLine(line, &label, &directive, &instruction);
 		/*
 		* For a label to be valid, it has to come after a .section directive.
@@ -36,6 +40,7 @@ std::string Assembler::assemble(std::ifstream* input) {
 			symTable->addSymbol(curSection->getPos(), 'O', curSection->getName(), label);
 		}
 		if (directive) {
+			translator.checkDirective(directive);
 			if (directive->getName() == "section") {
 				std::string name = directive->getOperand(0)->getSymbol();
 				if (sections.count(name) > 0) curSection = sections.at(name);
@@ -61,9 +66,13 @@ std::string Assembler::assemble(std::ifstream* input) {
 			else if (directive->getName() == "end") {
 				break;
 			}
+			else if (directive->getName() == "equ") {
+				equs.push_back(new EquDirective(directive));
+			}
 		}
 		if (instruction) {
 			if (!curSection) throw AssemblerException("Instructions must come after a .section directive.");
+			translator.checkInstruction(instruction);
 			curSection->addInstruction(instruction);
 			lines.push_back(instruction); lineTypes.push_back('I');
 		}
@@ -76,6 +85,22 @@ std::string Assembler::assemble(std::ifstream* input) {
 		Section* section = (*it).second;
 		section->finishPhase1();
 	}
+	//Resolving equ directives
+	bool progress = true;
+	while (equs.size() > 0 && progress) {
+		progress = false;
+		for (int i = 0; i < equs.size(); i++) {
+			EquDirective* cur = equs.at(i);
+			if (cur->canBeResolved(symTable)) {
+				cur->resolve(symTable);
+				progress = true;
+				equs.erase(equs.begin() + i);
+				i--;
+				delete cur;
+			}
+		}
+	}
+	if (equs.size() != 0) throw AssemblerException("Equ directive is not resolvable.");
 	//END OF PHASE 1
 
 	curSection = nullptr;

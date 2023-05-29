@@ -63,6 +63,9 @@
     <ClCompile Include="Emulator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="EquDirective.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Operand.h">
@@ -122,6 +125,9 @@
     <ClInclude Include="resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="EquDirective.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="Test2-A.txt">
@@ -146,6 +152,15 @@
       <Filter>Resource Files</Filter>
     </Text>
     <Text Include="Test3-C.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
+    <Text Include="Test4-A.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
+    <Text Include="Test5-A.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
+    <Text Include="Test5-B.txt">
       <Filter>Resource Files</Filter>
     </Text>
   </ItemGroup>

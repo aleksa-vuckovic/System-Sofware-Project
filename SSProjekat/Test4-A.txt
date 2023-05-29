@@ -1,0 +1,24 @@
+.section .data
+var: .ascii "Some \\string"
+check: .word 97
+
+.section .text
+ld $var, %r3
+ld $1, %r4
+loop:
+ld %r3, %r1
+call readChar
+beq %r1, %r0, end
+st %r1, 0xFFFFFF00
+add %r4, %r3
+jmp loop
+end:
+ld check, %r1
+st %r1,  0xFFFFFF00 #komentar
+halt
+
+readChar:
+ld [%r1], %r1
+ld $0x000000FF, %r2
+and %r2, %r1
+ret

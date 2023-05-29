@@ -1,5 +1,6 @@
 #include "InstructionTranslator.h"
 #include "Converter.h"
+#include "Parser.h"
 
 std::string InstructionTranslator::mnemonics[] = {
 		"halt", "int", "iret", "call", "ret", "jmp", "beq", "bne",
@@ -26,7 +27,11 @@ void InstructionTranslator::checkOpTypeJmp(Operand* op) {
 }
 void InstructionTranslator::checkOpTypeSt(Operand* op) {
 	Operand::Type t = op->getType();
-	if (t == Operand::IMM_LIT || t == Operand::IMM_SYM) throw TranslationException("InstructionTranslator::TranslationException: Unexpected operand type for a store instruction - immediate operands are not allowed.");
+	if (t == Operand::IMM_LIT || t == Operand::IMM_SYM || t == Operand::SPEC) throw TranslationException("InstructionTranslator::TranslationException: Unexpected operand type for a store instruction - immediate operands are not allowed.");
+}
+void InstructionTranslator::checkOpTypeLd(Operand* op) {
+	Operand::Type t = op->getType();
+	if (t == Operand::SPEC) throw TranslationException("InstructionTranslator::TranslationException: Unexpected operand type for a load instruction.");
 }
 void InstructionTranslator::checkGPR(Operand* op) {
 	if (!op->hasRegister()) return;
@@ -61,7 +66,7 @@ void InstructionTranslator::checkInstruction(Instruction* ins) {
 	//Checking first operand
 	Operand* op = ins->getOperand(0);
 	if (m == "call" || m == "jmp") checkOpTypeJmp(op);
-	else if (m == "ld");
+	else if (m == "ld") checkOpTypeLd(op);
 	else checkOpTypeReg(op);
 
 	if (m == "csrrd") checkCSR(op);
@@ -260,11 +265,24 @@ void InstructionTranslator::checkDirective(Directive* dir) {
 	else if (name == "end") {
 		if (opCnt != 0) throw TranslationException("InstructionTranslator::TranslationException: Unexpected number of arguments for end directive.");
 	}
+	else if (name == "ascii") {
+		if (opCnt != 1) throw TranslationException("InstructionTranslator::TranslationException: Unexpected number of arguments for ascii directive.");
+		if (dir->getOperand(0)->getType() != Operand::SPEC) throw TranslationException("InstructionTranslator::TranslationException: Unexpected operand type for ascii directive.");
+	}
+	else if (name == "equ") {
+		if (opCnt != 2) throw TranslationException("InstructionTranslator::TranslationException: Unexpected number of arguments for equ directive.");
+		if (dir->getOperand(0)->getType() != Operand::MEM_SYM || (dir->getOperand(1)->getType() != Operand::MEM_SYM && dir->getOperand(1)->getType() != Operand::MEM_LIT && dir->getOperand(1)->getType() != Operand::SPEC))
+			throw TranslationException("InstructionTranslator::TranslationException: Unexpected argument type for equ directive.");
+	}
 	else throw TranslationException("InstructionTranslator::TranslationException: Invalid directive name.");
 }
 int InstructionTranslator::getSize(Directive* dir) {
 	std::string name = dir->getName();
 	if (name == "word") return dir->getOperandCount() * 4;
 	else if (name == "skip") return dir->getOperand(0)->getLiteral();
+	else if (name == "ascii") {
+		Parser p;
+		return p.parseAsciiString(dir->getOperand(0)->getOriginalString()).length() + 1;
+	}
 	else return 0;
 }

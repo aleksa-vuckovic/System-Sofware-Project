@@ -6,13 +6,16 @@
 * Represents one operand from an assembly instruction.
 * There are 8 types of operands: Immediate Literal, Immediate Symbol, Memory Literal, Memory Symbol, Register Direct, Register Indirect, Register Literal, Register Symbol.
 * Each type has its own class.
+* There is also the Special operand type which was added for the .ascii and .equ directive,
+* which is meant to retain the full operand string, as provided in the assembly file.
 */
 class Operand {
 public:
-	typedef enum Type { IMM_LIT, IMM_SYM, MEM_LIT, MEM_SYM, REG_DIR, REG_IND, REG_LIT, REG_SYM } Type;
+	typedef enum Type { IMM_LIT, IMM_SYM, MEM_LIT, MEM_SYM, REG_DIR, REG_IND, REG_LIT, REG_SYM, SPEC } Type;
 	virtual std::string getSymbol() { return ""; }
 	virtual long long getLiteral() { return 0; }
 	virtual int getRegister() { return 0; }
+	virtual std::string getOriginalString() { return ""; }
 	virtual Type getType() = 0;
 
 	virtual bool hasLiteral() { return false; }
@@ -97,5 +100,13 @@ public:
 	SymbolRegisterOperand(std::string sym, int reg) : RegisterOperand(reg), SymbolOperand(sym) {}
 	Type getType() { return REG_SYM; }
 	std::string str() { return "[" + RegisterOperand::str() + " + " + SymbolOperand::str() + "]"; }
+};
+class SpecialOperand : public Operand {
+	std::string originalString;
+public:
+	SpecialOperand(std::string originalString) : originalString(originalString) {}
+	Type getType() { return SPEC; }
+	std::string getOriginalString() override { return originalString; }
+	std::string str() { return originalString; }
 };
 #endif

@@ -1,0 +1,33 @@
+.extern arrstart
+.extern a
+.extern b
+.extern c
+.section .text
+ld $100, %sp
+ld %r0, %r1 #current index
+ld $b, %r2 #last index
+ld $a, %r3 #to skip
+ld $c, %r4 #to skip
+ld $4, %r5 #mul constant
+ld $arrstart, %r6 #array address
+ld $1, %r7 #inc constant
+
+div %r5, %r2
+div %r5, %r4
+
+loop:
+beq %r1, %r2, end
+beq %r1, %r3, skip
+beq %r1, %r4, skip
+ld  %r1, %r8
+mul %r5, %r8
+add %r6, %r8
+ld [%r8], %r8
+st %r8, 0xFFFFFF00
+skip:
+add %r7, %r1
+jmp loop
+end:
+halt
+.end
+expected output: helo helo

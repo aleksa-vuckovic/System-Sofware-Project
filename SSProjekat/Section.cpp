@@ -4,6 +4,7 @@
 #include <unordered_map>
 #include <vector>
 #include "Operand.h"
+#include "Parser.h"
 bool Section::isWithinOffset(int length) {
 	return length <= (1 << 12) - 1 && length >= -(1 << 12);
 }
@@ -47,7 +48,6 @@ Section::~Section() {
 	delete relTable; relTable = nullptr;
 }
 void Section::addInstruction(Instruction* ins) {
-	translator->checkInstruction(ins);
 	int size = translator->getSize(ins);
 	//Check if code segment should end
 	if (segmentEnd(size)) finishCodeSegment();
@@ -76,7 +76,6 @@ void Section::addInstruction(Instruction* ins) {
 }
 void Section::addDirective(Directive* dir) {
 	std::string name = dir->getName();
-	translator->checkDirective(dir);
 	int size = translator->getSize(dir);
 	//Check if code segment should end
 	if (segmentEnd(size)) finishCodeSegment();
@@ -198,6 +197,13 @@ void Section::addDirective2(Directive* dir, SymbolTable* symTab) {
 		for (int i = 0; i < toSkip; i++) data += "00";
 		pos += toSkip;
 	}
+	else if (name == "ascii") {
+		Parser parser;
+		std::string chars = parser.parseAsciiString(dir->getOperand(0)->getOriginalString());
+		for (char c : chars) data += Converter::toHex(c, 2);
+		data += "00";
+	}
+	else return;
 	checkSegmentSwitch();
 }
 void Section::finishPhase2(SymbolTable* symTab) {

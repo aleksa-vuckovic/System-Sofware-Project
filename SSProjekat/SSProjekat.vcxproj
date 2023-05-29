@@ -130,6 +130,7 @@
     <ClCompile Include="Assembler.cpp" />
     <ClCompile Include="Converter.cpp" />
     <ClCompile Include="Emulator.cpp" />
+    <ClCompile Include="EquDirective.cpp" />
     <ClCompile Include="Instruction.cpp" />
     <ClCompile Include="InstructionCode.cpp" />
     <ClCompile Include="InstructionTranslator.cpp" />
@@ -148,6 +149,7 @@
     <ClInclude Include="Assembler.h" />
     <ClInclude Include="Converter.h" />
     <ClInclude Include="Emulator.h" />
+    <ClInclude Include="EquDirective.h" />
     <ClInclude Include="Exception.h" />
     <ClInclude Include="InstructionCode.h" />
     <ClInclude Include="InstructionTranslator.h" />
@@ -174,6 +176,9 @@
     <Text Include="Test3-A.txt" />
     <Text Include="Test3-B.txt" />
     <Text Include="Test3-C.txt" />
+    <Text Include="Test4-A.txt" />
+    <Text Include="Test5-A.txt" />
+    <Text Include="Test5-B.txt" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="SSProjekat.rc" />

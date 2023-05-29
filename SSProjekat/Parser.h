@@ -35,6 +35,25 @@ public:
 		OperandException(std::string msg) : ParserException(msg) {}
 	};
 	Parser();
+
+	/*
+	* Removes single line comment from line, if it exists.
+	* Single line comments start with #.
+	*/
+	std::string removeComment(std::string line);
+	/*
+	* Returns true if line contains only blank characters.
+	*/
+	bool emptyLine(std::string line);
+	/*
+	* Turns escape sequences like \n, \t, and \\ into single characters and returns
+	* the modified string.
+	*/
+	std::string unescape(std::string data);
+	/*
+	* Extract the string in between the double quotes from the operand.
+	*/
+	std::string parseAsciiString(std::string operand);
 	
 	//Parses a literal from the string, removing all blanks and checking if the literal is hexadecimal.
 	long long parseLiteral(std::string lit);

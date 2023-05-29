@@ -1,0 +1,11 @@
+.global a
+.global b
+.global c
+.global arrstart
+.equ arrstart, arrstartLabel
+.equ a, 2
+.equ b, arrend - arrstartLabel
+.equ c, arrend - arrstartLabel - 8
+.section .data
+arrstartLabel: .word 104, 101, 108, 108, 111, 32, 104, 101, 108, 108, 111
+arrend:
