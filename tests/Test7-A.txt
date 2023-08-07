@@ -1,0 +1,10 @@
+.extern A
+.extern B
+.global Bvar
+
+.section .main
+call A
+halt
+
+.section .data
+Bvar: .word B

@@ -1,0 +1,59 @@
+.equ OUT, 0xFFFFFF00
+.equ IN, 0xFFFFFF04
+.equ BADCODE, 1
+.equ TIMER, 2
+.equ TERMINAL, 3
+.equ INTR, 4
+.extern print
+.global handler
+.global char
+.global charReady
+
+.section .handler
+handler:
+push %r1
+push %r2
+csrrd %cause, %r1
+ld $BADCODE, %r2
+beq %r1, %r2, handleBadCode
+ld $TIMER, %r2
+beq %r1, %r2, handleTimer
+ld $TERMINAL, %r2
+beq %r1, %r2, handleTerminal
+ld $INTR, %r2
+beq %r1, %r2, handleIntr
+jmp end
+
+handleBadCode:
+ld $badCodeMsg, %r1
+call print
+halt
+
+handleTimer:
+ld $timerMsg, %r1
+call print
+jmp end
+
+handleTerminal:
+ld IN, %r1
+st %r1, char
+ld $1, %r1
+st %r1, charReady
+jmp end
+
+handleIntr:
+ld $intrMsg, %r1
+call print
+jmp end
+
+end:
+pop %r2
+pop %r1
+iret
+
+.section .data
+badCodeMsg: .ascii "Bad code interrupt\n"
+timerMsg: .ascii "Timer interrupt\n"
+intrMsg: .ascii "User interrupt\n"
+charReady: .word 0
+char: .word 0

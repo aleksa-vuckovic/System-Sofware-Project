@@ -1,0 +1,22 @@
+FILE HEADER
+5
+SECTION HEADER TABLE
+SYMTAB,S,8,6
+.main,L,14,2
+.rela.main,R,16,2
+.data,L,18,2
+.rela.data,R,20,2
+SYMTAB
+0,S,L,.data,.data
+0,S,L,.main,.main
+0,U,G,*UND*,A
+0,U,G,*UND*,B
+0,O,G,.data,Bvar
+.main
+21F000040000000000000000
+.rela.main
+8,REL_32,A,0
+.data
+00000000
+.rela.data
+0,REL_32,B,0

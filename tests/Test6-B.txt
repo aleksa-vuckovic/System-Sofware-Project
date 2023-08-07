@@ -1,0 +1,25 @@
+.section .text
+.global print
+print:
+#r1 contains the address
+push %r1
+push %r2
+push %r3
+push %r4
+
+ld $1, %r3
+ld $0xFF, %r4
+loop:
+ld [%r1], %r2
+and %r4, %r2
+beq %r2, %r0, end
+st %r2, 0xFFFFFF00
+add %r3, %r1
+jmp loop
+
+end:
+pop %r4
+pop %r3
+pop %r2
+pop %r1
+ret

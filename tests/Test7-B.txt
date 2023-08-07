@@ -1,0 +1,12 @@
+.equ A, 0x50000000
+.equ B, 97
+.extern Bvar
+.global A
+.global B
+
+.section .func
+push %r1
+ld Bvar, %r1
+st %r1, 0xFFFFFF00
+pop %r1
+ret

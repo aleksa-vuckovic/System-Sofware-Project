@@ -1,0 +1,25 @@
+.extern getLine
+.extern handler
+.extern print
+.section .main
+ld $0x1000, %sp
+ld $handler, %r1
+csrwr %r1, %handler
+ld $0x1, %r1
+csrwr %r1, %status
+ld $startMsg, %r1
+call print
+ld $input, %r1
+call getLine
+call print
+call getLine
+call print
+call getLine
+call print
+ld $endMsg, %r1
+call print
+halt
+
+startMsg: .ascii "Start\n"
+endMsg: .ascii "End\n"
+input: .skip 100

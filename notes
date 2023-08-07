@@ -1,0 +1,284 @@
+SS PROJEKAT
+
+Format objektnog fajla:
+
+FILE HEADER
+Broj sekcija
+SHT
+Ime,Tip,Ofset,Velicina
+	Ime = ime sekcije
+	Tip = L za loadable (korisnicke sekcije), R za rela, S za symtab
+	Ofset = broj linije na kojoj pocinje sekcija
+	Velicina = broj linija
+SYMTAB
+Vrednost,Tip,Bind,Sekcija,Ime
+	Vrednost = tekstualni zapis offseta
+	Tip = S za section, O za object
+	Bind = L ili G
+	Sekcija = Ime 
+	Ime = string (nema strtab)
+.korisnickasekcija
+0123456789ABCDEF0123456789ABCDEF
+0123456789ABCDEF0123456789ABCDEF
+0123456789ABCDEF0123456789ABCDEF
+0123456789ABCDEF0123456789ABCDEF
+0123456789ABCDEF0123456789ABCDEF
+0123456789ABCDEF0123456789ABCDEF
+0123456789ABCDEF0123456789ABCDEF
+.rela.sekcija
+Ofset,Tip,Simbol,Addend
+	Ofset = ofset u karakterima do lokacije na kojoj treba vrsiti prepravku
+	Tip = rip relokacije: "PC12", "32"
+	Simbol = naziv simbola, prazan string ako je bez simbola
+	Addend = dodatak
+
+
+ASEMBLER:
+Komanda:
+	asembler [-o ime] imeulaza
+	Samo jedna ulazna datoteka
+
+Asemblerski kod:
+	-Jedna linija = [labela] jedna naredba/jedna direktiva, ili samo labela
+	-# jednolinijski komentar
+	-labela je ima:, obavezno na pocetku linije
+	-beli znakovi na pocetku linije se ignorisu
+
+Direktive:
+	Nivo A:
+	.global <lista simbola>
+	.extern <lista simbola>
+	.section <ime sekcije>
+	.word <list simbola ili literala>
+	.skip <literal> //preskace zadati broj bajtova, popunjavajuci ih nulama
+	.end
+	
+	Nivo B:
+	.ascii <string>
+	
+	Nivo C:
+	.equ simbol, izraz //nije specificirano sta moze da bude izraz
+		//moja pretpostavka je da izraz moze da sadrzi + -, celobrojne literale i lokalne simbole
+		//pri cemu vazi da pri racunanju na kraju moraju da se poniste sve vrednosti sekcija osim jedne.
+
+Registri
+Opsti: r0-15, pri cemu r14=sp, r15=pc
+Kontrolniostatusni(csr): status, handler, cause (0, 1, 2)
+
+Operandi instrukcija za podatke:
+	$literal -> imm literal
+	$simbol -> imm simbol
+	literal -> mem adresa
+	simbol -> mem adresa
+	%reg -> regdir
+	[%reg] -> regind
+	[%reg + literal] -> regind
+	[%reg + simbol] -> regind, simbol je kao literal
+Operandi instrukcija za skok:
+	literal
+	simbol
+
+LINKER
+Na ulazu dobija tekstualni fajl iz asemblera
+Moze imati dva izlaza, u zavisnosti od opcije:
+	1) (nivo A) -hex : izlaz je heks sadrzaj memorije zadat u formatu:
+				0000: 00 01 02 03 04 05 06 07
+				0008: 08 09 ...
+				...
+	2) (nivo B) -relocatable : izlaz je tekstualni fajl u formatu istom kao asemblerski, samo
+				se spoje sve istoimene sekcije, i pravi se nova tabela simbola,
+				i preprave se relokacije
+
+Opcije:
+	nivo A:
+	-o ime
+	-place=imesekcije@adresa
+	
+EMULATOR
+Pocetna instrukcije je uvek 0x40000000
+
+
+
+SISTEM
+-little endian
+-32b registri, 32b adrese
+-r0 je uvek 0
+-r15 je pc
+-r14 je sp -> ka nizim, poslednja zauzeta
+
+-status koristi samo niza 3 bita: I, T1, Tr (maskiranje, maskiranje terminala, maskiranje tajmera)
+-Od 0XFFFFFF00 su memorijski mapirani registri (256B 8 registara)
+
+-prekidna rutina je na adresi iz handler
+-cause:
+	1 nekorektna instrukcija
+	2 tajmer
+	3 terminala
+	4 softverski prekid
+-pri prekidu na stek se stavlja status i povratna adresa, i postvlja se I bit
+
+FORMAT INSTRUKCIJA
+Sve imaju 4B
+OC | MOD | RA | RB | RC | DSP | DSP | DSP
+OC je kod, MOD je produzetak koda instrukcije
+R polja su indeks registra, za csr vazi 0 - status, 1 - handler, 2 - cause
+
+halt -> 00
+intr -> 10
+call -> 20 AB 0D DD | skace na gpr[A] + gpr[B] + D
+callm-> 21 AB 0D DD | skace na mem[gpr[A] + gpr[B] + D]
+
+jmp  -> 30 A0 0D DD | skace na gpr[A] + D
+jmpe -> 31 AB CD DD | B==C
+jmpne-> 32 AB CD DD | B!=C
+jmpg -> 33 AB CD DD | B >C (oznaceno)
+jmpm -> 38 A0 0D DD | skace na mem[gpr[A] + D] 
+jmpme-> 39 AB CD DD | B==C
+jmpmne> 3A AB CD DD | B!=C
+jmpmg-> 3B AB CD DD | B >C (oznaceno)
+
+swp  -> 40 0B C0 00 | grp[B] <=> grp[C]
+
+add  -> 50 AB C0 00 | grp[A] = gpr[B] + gpr[C]
+sub  -> 51
+mul  -> 52
+div  -> 53
+
+not  -> 60 AB 00 00 | gpr[A] = not gpr[B]
+and  -> 61 AB C0 00 | gpr[A] = gpr[B] & gpr[C]
+or   -> 62
+xor  -> 63
+
+shl  -> 70 AB C0 00 | gpr[A] = gpr[B] << gpr[C]
+shr  -> 71
+
+st   -> 80 AB CD DD | mem[gpr[A]+gpr[B]+D] = gpr[C]
+st   -> 81 A0 CD DD | gpr[A] += D; mem[gpr[A]] = gpr[C]
+st	 -> 82 AB CD DD | mem[mem[gpr[A]+gpr[B]+D]] = gpr[C]
+
+ldcsr-> 90 AB 00 00 | gpr[A] = csr[B]
+stcsr-> 94 AB 00 00 | csr[A] = gpr[B]
+ldimm-> 91 AB 0D DD | gpr[A] = gpr[B] + D
+ld   -> 92 AB CD DD | gpr[A] = mem[gpr[B] + gpr[C] + D]
+ldcsr-> 96 AB CD DD | csr[A] = mem[gpr[B] + gpr[C] + D]
+ldinc-> 93 AB 0D DD | gpr[A] = mem[gpr[B]]; gpr[B] += D;
+ldcsr-> 97 AB 0D DD | csr[A] = mem[gpr[B]]; gpr[B] += D;
+orcsr-> 95 AB 0D DD | csr[A] = csr[B] | D;
+
+
+
+
+MAPIRANJE ASEMBLERSKIH INSTRUKCIJA
+halt 		-> 	halt (00 00 00 00)
+int  		-> 	intr (10 00 00 00)
+iret 		-> 	ldinccsr csr[0] = mem[gpr[14]]; gpr[14] += 4; (97 0E 00 04)
+				ldinc gpr[15] = mem[gpr[14]]; gpr[14] += 4; (93 FE 00 04)
+call op 	-> 	callm mem[gpr[15] + gpr[0] + D] (21 F0 0D DD)
+					//dodaje se u literal pool
+					//u D se upisuje odgovarajuci pomeraj za literal pool
+ret 		-> 	ldinc gpr[15] = mem[gpr[14]]; gpr[14] += 4; (93 FE 00 04)
+jmp op		-> 	jmp gpr[15] + D (30 F0 0D DD)
+					//generisati i pcrel rel. zapis (za literal se koristi addend)
+beq %A,%B,op-> 	jmpe gpr[15] + D (31 FA BD DD)
+					//generisati i pcrel rel. zapis (za literal se koristi addend)
+bne %A,%B,op-> 	jmpne gpr[15] + D (32 FA BD DD)
+					//generisati i pcrel rel. zapis (za literal se koristi addend)
+bgt %A,%B,op-> 	jmpg gpr[15] + D (33 FA BD DD)
+					//generisati i pcrel rel. zapis (za literal se koristi addend)
+push %A		->  PUSH(A)
+pop %B 		-> 	POP(B)
+xchg %A, %B ->  swp A, B (40 0A B0 00)
+add %A, %B  ->  add gpr[B] = gpr[B] + gpr[A] (50 BB A0 00)
+sub %A, %B  ->  sub gpr[B] = gpr[B] - gpr[A] (51 BB A0 00)
+mul %A, %B  ->  mul gpr[B] = gpr[B] * gpr[A] (52 BB A0 00)
+div %A, %B  ->  div gpr[B] = gpr[B] / gpr[A] (53 BB A0 00)
+not %A	 	-> 	not gpr[A] = not gpr[A] (60 AA 00 00)
+and %A, %B  ->  and gpr[B] = gpr[B] & gpr[A] (61 BB A0 00)
+or %A, %B  	->  or gpr[B] = gpr[B] | gpr[A] (62 BB A0 00)
+xor %A, %B  ->  xor gpr[B] = gpr[B] ^ gpr[A] (63 BB A0 00)
+shl %A, %B 	->  (70 BB A0 00)
+shr %A, %B  ->  (71 BB A0 00)
+ld op, %A 	->	
+				$literal
+					//dodaje se u literal pool
+					ld gpr[A] = mem[gpr[15] + gpr[0] + D] (92 AF 0D DD)
+					//u D se upisuje odgovarajuci pomeraj za literal pool
+				$simbol
+					//dodaje se u literal pool
+					ld gpr[A] = mem[gpr[15] + gpr[0] + D] (92 AF 0D DD)
+					//u D se upisuje odgovarajuci pomeraj za literal pool
+					//za ulaz u pool-u se generise i aps. rel. zapis
+				literal
+					//dodaje se u literal pool
+					ld gpr[A] = mem[gpr[15] + gpr[0] + D] (92 AF 0D DD)
+					//u D se upisuje odgovarajuci pomeraj za literal pool
+					ld gpr[A] = mem[gpr[A] + gpr[0] + 0] (92 AA 00 00)
+				simbol -> mem adresa
+					//dodaje se u literal pool
+					ld gpr[A] = mem[gpr[15] + gpr[0] + D] (92 AF 0D DD)
+					//u D se upisuje odgovarajuci pomeraj za literal pool
+					//za ulaz u pool-u se generise i aps. rel. zapis
+					ld gpr[A] = mem[gpr[A] + gpr[0] + 0] (92 AA 00 00)
+				%B -> regdir
+				`	(91 AB 00 00)
+				[%B] -> regind
+					ld gpr[A] = mem[gpr[B] + gpr[0] + 0] (92 AB 00 00)
+				[%B + literal] -> regind
+					//dodaje se u literal pool
+					ld gpr[A] = mem[gpr[15] + gpr[0] + D] (92 AF 0D DD)
+					//u D se upisuje odgovarajuci pomeraj za literal pool
+					ld gpr[A] = mem[gpr[A] + gpr[B] + 0] (92 AA B0 00)
+				[%B + simbol] -> regind, simbol je kao literal
+					//dodaje se u literal pool
+					ld gpr[A] = mem[gpr[15] + gpr[0] + D] (92 AF 0D DD)
+					//u D se upisuje odgovarajuci pomeraj za literal pool
+					//za ulaz u pool-u se generise i aps. rel. zapis
+					ld gpr[A] = mem[gpr[A] + gpr[B] + 0] (92 AA B0 00)
+					
+st %A, op 	->	$literal -> greska
+				$simbol -> greska
+				literal
+					st mem[mem[gpr[15] + gpr[0] + D]] = gpr[A] (82 F0 AD DD)
+					//dodaje se u literal pool
+					//u D se upisuje odgovarajuci pomeraj za literal pool
+				simbol -> mem adresa
+					st mem[mem[gpr[15] + gpr[0] + D]] = gpr[A] (82 F0 AD DD)
+					//dodaje se u literal pool
+					//u D se upisuje odgovarajuci pomeraj za literal pool
+				%B -> regdir
+				`	(91 BA 00 00)
+				[%B] -> regind
+					st mem[gpr[B] + gpr[0] + [0]] = gpr[A] (80 B0 A0 00)
+				[%B + literal] -> regind
+					PUSH(C) //Za C odabrati neki reg koji nije A, ni B
+					//dodaje se u literal pool
+					ld gpr[C] = mem[gpr[15] + gpr[0] + D] (92 CF 0D DD)
+					//u D se upisuje odgovarajuci pomeraj za literal pool
+					st mem[gpr[B] + gpr[C] + 0] = gpr[A] (80 BC A0 00)
+					POP(C)
+				[%B + simbol] -> regind, simbol je kao literal
+					PUSH(C) //Za C odabrati neki reg koji nije A, ni B
+					//dodaje se u literal pool
+					ld gpr[C] = mem[gpr[15] + gpr[0] + D] (92 CF 0D DD)
+					//u D se upisuje odgovarajuci pomeraj za literal pool
+					//za ulaz u pool-u se generise i aps. rel. zapis
+					st mem[gpr[B] + gpr[C] + 0] = gpr[A] (80 BC A0 00)
+					POP(C)
+csrrd %A, %B->	(90 BA 00 00)
+csrwr %A, %B->	(94 BA 00 00)
+
+**Za svaku pojavu $literal, ili literal u nonjmp instrukciji, dodaje se u pool taj literal
+**Za svaku pojavu $simbol, ili simbol u nonjmp instrukciji, dodaje se u pool taj simbol, sa rel. zapisom
+
+PUSH(reg): 	stinc gpr[14] += -4; mem[gpr[14]] = gpr[reg]; (81 E0 RF FC)
+POP(reg):	ldinc gpr[reg] = mem[gpr[14]]; gpr[14] += 4; (93 rE 00 04)
+
+
+ZA DORADU:
+Bez literal poola za male literale (moze preko displacementa).
+Adresa iline labele treba da se odredjuje u sekciji, jer moze da se desi da se taj segment koda
+nadje bas na metu preloma sekcije, pa da labela onda ukazuje na pogresno mesto.
+
+NAPOMENE:
+1. Adresiranje "registar + literal" i "registar + simbol" je implementirano preko bazena, tako da ogranicenje od 12 bita,
+	koje je kasnije dodato u tekst projekta, ne postoji.

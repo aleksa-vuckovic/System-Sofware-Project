@@ -1,0 +1,28 @@
+FILE HEADER
+7
+SECTION HEADER TABLE
+SYMTAB,S,10,7
+.func,L,17,3
+.rela.func,R,20,2
+.main,L,22,2
+.rela.main,R,24,1
+.data,L,25,2
+.rela.data,R,27,1
+SYMTAB
+0,S,L,.data,.data
+0,S,L,.func,.func
+0,S,L,.main,.main
+1342177280,O,G,*ABS*,A
+97,O,G,*ABS*,B
+0,O,G,.data,Bvar
+.func
+81E01FFC921F00109211000082F0100C931E0004
+93FE00040000000000FFFFFF
+.rela.func
+24,REL_32,Bvar,0
+.main
+21F000040000000000000050
+.rela.main
+.data
+61000000
+.rela.data
